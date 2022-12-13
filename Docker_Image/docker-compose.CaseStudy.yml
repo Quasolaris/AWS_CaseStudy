@@ -1,0 +1,35 @@
+version: '3'
+services:
+  limesurvey:
+    
+    image: docker.io/martialblog/limesurvey:latest
+    
+    restart: always
+     
+    # save uploads of surveys to mount on host system
+    volumes:
+     - ~/LimeSurvey/upload/surveys:/var/www/html/upload/surveys 
+
+    environment:
+      - DB_TYPE=pgsql
+      - DB_PORT=5432
+      
+      # here set host to AWS Postgresql
+      - DB_HOST=
+
+      - DB_PASSWORD=example
+      - DB_NAME=limesurvey
+      - DB_USERNAME=limesurvey
+      - ADMIN_USER=admin
+      - ADMIN_NAME=Admin
+      - ADMIN_PASSWORD=example
+      - ADMIN_EMAIL=admin@example.com
+      - PUBLIC_URL=foobar.com
+    
+    
+    ports:
+      - 8080:8080
+
+volumes:
+  limesurvey:
+  db-data:
