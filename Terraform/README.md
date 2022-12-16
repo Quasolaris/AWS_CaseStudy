@@ -1,6 +1,17 @@
 # Terraform Dateien
 ## main.tf
-Erstellt einen ECS Cluster, ein ECR Repository, etc.
+Deploys infrastructure on AWS:
+* Elastic Container Service (ECS) cluster
+* Elastic Container Service (ECS) service
+* Elastic Container Service (ECS) task
+* Application Load Balancer
+* Listener
+* Target Group
+* Security Group
+* Subnets
+* Virtual Private Cloud (VPC)
+* Simple Storage Service (S3) bucket (currently not activated)
+
 ## usage
 Precondition: Terraform is installed on your machine.
 
