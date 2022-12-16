@@ -12,19 +12,19 @@ services:
 
     environment:
       - DB_TYPE=pgsql
-      - DB_PORT=5432
+      - DB_PORT
       
       # here set host to AWS Postgresql
-      - DB_HOST=
+      - DB_HOST
 
-      - DB_PASSWORD=example
-      - DB_NAME=limesurvey
-      - DB_USERNAME=limesurvey
-      - ADMIN_USER=admin
-      - ADMIN_NAME=Admin
-      - ADMIN_PASSWORD=example
-      - ADMIN_EMAIL=admin@example.com
-      - PUBLIC_URL=foobar.com
+      - DB_PASSWORD
+      - DB_NAME
+      - DB_USERNAME
+      - ADMIN_USER
+      - ADMIN_NAME
+      - ADMIN_PASSWORD
+      - ADMIN_EMAIL
+      - PUBLIC_URL
     
     
     ports:
