@@ -1,7 +1,7 @@
 resource "aws_db_instance" "limesurvey_db" {
 
   allocated_storage = 20
-  identifier = "rds-terraform"
+  identifier = "rds-limesurvey"
   storage_type = "gp2"
   engine = "postgres"
   instance_class = "db.t3.micro"
