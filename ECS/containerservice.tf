@@ -17,7 +17,7 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
       "essential": true,
       "environment": [
         {
-          "DB_HOST": "rds-terraform.ctdd1h1cnfhf.us-east-1.rds.amazonaws.com",
+          "DB_HOST": "rds-limesurvey.cdhkghclow3g.us-east-1.rds.amazonaws.com",
           "DB_TYPE": "pgsql",
           "DB_PORT": 5432,
           "DB_PASSWORD": "limesurvey$123",
@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
           "ADMIN_NAME": "admin",
           "ADMIN_PASSWORD": "admin$1234",
           "ADMIN_EMAIL": "admin@example.com",
-          "PUBLIC_URL": "umfrage-lb-tf-1152577437.us-east-1.elb.amazonaws.com"
+          "PUBLIC_URL": "umfrage-lb-tf-918617678239.us-east-1.elb.amazonaws.com"
         }
       ],
       "ports": "8080:8080",
@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
       "MountPoints": [
         {
           "ContainerPath": "/var/www/html/upload/surveys",
-          "SourceVolume": "~/LimeSurvey/upload/surveys"
+          "SourceVolume": "s3://arn:aws:s3:us-east-1:918617678239:accesspoint/limesurvey"
         }
       ],
       "memory": 512,
@@ -52,7 +52,8 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Specifying the memory our container requires
   cpu                      = 256         # Specifying the CPU our container requires
-  execution_role_arn       = "arn:aws:iam::273859233498:role/LabRole" # replace with your own Account ID
+  execution_role_arn       = "arn:aws:iam::918617678239:role/LabRole" # replace with your own Account ID
+
   tags = {
     Modul = "pcls",
     Service = "ECS",
