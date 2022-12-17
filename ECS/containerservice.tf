@@ -1,5 +1,10 @@
 resource "aws_ecs_cluster" "case_study_umfrage_ecs_cluster" {
   name = "case-study-umfrage-ecs-cluster"
+  tags = {
+    Modul = "pcls",
+    Service = "ECS",
+    Komponente = "Cluster"
+  }
 }
 
 resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
@@ -25,7 +30,12 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Specifying the memory our container requires
   cpu                      = 256         # Specifying the CPU our container requires
-  execution_role_arn       = "arn:aws:iam::273859233498:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  execution_role_arn       = "arn:aws:iam::273859233498:role/LabRole" # replace with your own Account ID
+  tags = {
+    Modul = "pcls",
+    Service = "ECS",
+    Komponente = "Task"
+  }
 }
 
 resource "aws_ecs_service" "umfrage_service" {
@@ -45,9 +55,18 @@ resource "aws_ecs_service" "umfrage_service" {
     assign_public_ip = true                                                # Providing our containers with public IPs
     security_groups  = ["${aws_security_group.service_security_group.id}"] # Setting the security group
   }
+  tags = {
+    Modul = "pcls",
+    Service = "ECS",
+    Komponente = "Service"
+  }
 }
 
 resource "aws_security_group" "service_security_group" {
+  tags = {
+    Modul = "pcls",
+    Service = "SecurityGroup",
+  }
   ingress {
     from_port = 0
     to_port   = 0
@@ -91,10 +110,20 @@ resource "aws_alb" "application_load_balancer" {
   ]
   # Referencing the security group
   security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
+  tags = {
+    Modul = "pcls",
+    Service = "Loadbalancer",
+    Komponente = "Loadbalancer"
+  }
 }
 
 # Creating a security group for the load balancer:
 resource "aws_security_group" "load_balancer_security_group" {
+  tags = {
+    Modul = "pcls",
+    Service = "Loadbalancer",
+    Komponente = "SecurityGroup"
+  }
   ingress {
     from_port   = 80 # Allowing traffic in from port 80
     to_port     = 80
@@ -121,6 +150,11 @@ resource "aws_lb_target_group" "target_group" {
   health_check {
     matcher = "200,301,302"
     path = "/"
+  }
+  tags = {
+    Modul = "pcls",
+    Service = "Loadbalancer",
+    Komponente = "TargetGroup"
   }
 }
 
