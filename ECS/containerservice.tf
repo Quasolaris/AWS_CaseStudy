@@ -13,8 +13,24 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   [
     {
       "name": "case-study-umfrage-task",
-      "image": "docker.io/nginx:latest",
+      "image": "docker.io/martialblog/limesurvey:latest",
       "essential": true,
+      "environment": [
+        {
+          "DB_HOST": "rds-terraform.ctdd1h1cnfhf.us-east-1.rds.amazonaws.com",
+          "DB_TYPE": "pgsql",
+          "DB_PORT": 5432,
+          "DB_PASSWORD": "limesurvey$123",
+          "DB_NAME": "limesurvey",
+          "DB_USERNAME": "limesurvey",
+          "ADMIN_USER": "admin",
+          "ADMIN_NAME": "admin",
+          "ADMIN_PASSWORD": "admin$1234",
+          "ADMIN_EMAIL": "admin@example.com",
+          "PUBLIC_URL": "umfrage-lb-tf-1152577437.us-east-1.elb.amazonaws.com"
+        }
+      ],
+      "ports": "8080:8080",
       "portMappings": [
         {
           "containerPort": 80,
