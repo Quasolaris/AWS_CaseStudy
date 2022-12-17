@@ -14,3 +14,7 @@ provider "aws" {
 module "ecs" {
     source = "../ECS"  
 }
+
+module "rds" {
+    source = "../RDS"
+}
