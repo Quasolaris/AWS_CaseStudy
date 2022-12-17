@@ -37,6 +37,12 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
           "hostPort": 80
         }
       ],
+      "MountPoints": [
+        {
+          "ContainerPath": "/var/www/html/upload/surveys",
+          "SourceVolume": "~/LimeSurvey/upload/surveys"
+        }
+      ],
       "memory": 512,
       "cpu": 256
     }
