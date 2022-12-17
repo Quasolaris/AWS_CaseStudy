@@ -25,7 +25,7 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Specifying the memory our container requires
   cpu                      = 256         # Specifying the CPU our container requires
-  execution_role_arn       = "arn:aws:iam::273859233498:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+  execution_role_arn       = "arn:aws:iam::918617678239:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
 }
 
 resource "aws_ecs_service" "umfrage_service" {
