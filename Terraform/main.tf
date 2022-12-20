@@ -18,7 +18,7 @@ module "ecs" {
     source = "../ECS"  
 }
 
-module "cdn" {
-    source = "../CDN"
-}
+#module "cdn" {
+#    source = "../CDN"
+#}
 

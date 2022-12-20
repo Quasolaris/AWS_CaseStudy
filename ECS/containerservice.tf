@@ -17,17 +17,48 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
       "essential": true,
       "environment": [
         {
-          "DB_HOST": "rds-limesurvey.cdhkghclow3g.us-east-1.rds.amazonaws.com",
-          "DB_TYPE": "pgsql",
-          "DB_PORT": 5432,
-          "DB_PASSWORD": "limesurvey$123",
-          "DB_NAME": "limesurvey",
-          "DB_USERNAME": "limesurvey",
-          "ADMIN_USER": "admin",
-          "ADMIN_NAME": "admin",
-          "ADMIN_PASSWORD": "admin$1234",
-          "ADMIN_EMAIL": "admin@example.com",
-          "PUBLIC_URL": "umfrage-lb-tf-918617678239.us-east-1.elb.amazonaws.com"
+          "name": "DATABASE_URL",
+          "value": "postgresql://limesurvey:limesurvey$123@rds-limesurvey.cdhkghclow3g.us-east-1.rds.amazonaws.com:5432/limesurvey"
+        },
+        {
+          "name": "RDS_HOSTNAME",
+          "value": "rds-limesurvey.cdhkghclow3g.us-east-1.rds.amazonaws.com"
+        },
+        {
+          "name": "RDS_TYPE",
+          "value": "pgsql"
+        },
+        {
+          "name": "RDS_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "RDS_PASSWORD",
+          "value": "limesurvey$123"
+        },
+        {
+          "name": "RDS_DB_NAME",
+          "value": "limesurvey"
+        },
+        {
+          "name": "RDS_USERNAME",
+          "value": "limesurvey"
+        },
+        {
+          "name": "RDS_ADMIN_USER",
+          "value": "admin"
+        },
+        {
+          "name": "RDS_ADMIN_NAME",
+          "value": "admin"
+        },
+        {
+          "name": "RDS_ADMIN_PASSWORD",
+          "value": "admin$1234"
+        },
+        {
+          "name": "RDS_ADMIN_EMAIL",
+          "value": "admin@example.com"
         }
       ],
       "ports": "8080:8080",
@@ -35,12 +66,6 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
         {
           "containerPort": 80,
           "hostPort": 80
-        }
-      ],
-      "MountPoints": [
-        {
-          "ContainerPath": "/var/www/html/upload/surveys",
-          "SourceVolume": "s3://arn:aws:s3:us-east-1:918617678239:accesspoint/limesurvey"
         }
       ],
       "memory": 512,
@@ -52,7 +77,7 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Specifying the memory our container requires
   cpu                      = 256         # Specifying the CPU our container requires
-  execution_role_arn       = "arn:aws:iam::918617678239:role/LabRole" # replace with your own Account ID
+  execution_role_arn       = "arn:aws:iam::273859233498:role/LabRole" # replace with your own Account ID
 
   tags = {
     Modul = "pcls",

@@ -14,6 +14,7 @@ resource "aws_db_instance" "limesurvey_db" {
 
   tags = {
     Name = "limesurvey-db"
+    Modul = "pcls"
   }
 }
 
