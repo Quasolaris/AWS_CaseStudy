@@ -80,8 +80,7 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   execution_role_arn       = "arn:aws:iam::918617678239:role/LabRole" # replace with your own Account ID
 
   depends_on = [
-    aws_ecs_cluster.case_study_umfrage_ecs_cluster,
-    aws_ecs_service.umfrage_service
+    aws_ecs_cluster.case_study_umfrage_ecs_cluster
   ]
 
   tags = {
@@ -111,6 +110,7 @@ resource "aws_ecs_service" "umfrage_service" {
   }
 
   depends_on = [
+    aws_ecs_cluster.case_study_umfrage_ecs_cluster,
     aws_lb_listener.listener
   ]
 
