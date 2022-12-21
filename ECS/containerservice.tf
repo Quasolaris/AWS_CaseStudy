@@ -77,7 +77,12 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Specifying the memory our container requires
   cpu                      = 256         # Specifying the CPU our container requires
-  execution_role_arn       = "arn:aws:iam::273859233498:role/LabRole" # replace with your own Account ID
+  execution_role_arn       = "arn:aws:iam::918617678239:role/LabRole" # replace with your own Account ID
+
+  depends_on = [
+    aws_ecs_cluster.case_study_umfrage_ecs_cluster,
+    aws_ecs_service.umfrage_service
+  ]
 
   tags = {
     Modul = "pcls",
@@ -93,7 +98,8 @@ resource "aws_ecs_service" "umfrage_service" {
   launch_type     = "FARGATE"
   desired_count   = 3 # Setting the number of containers we want deployed to 3
   load_balancer {
-    target_group_arn = "${aws_lb_target_group.target_group.arn}" # Referencing our target group
+    target_group_arn = aws_lb_target_group.target_group.arn # Referencing our target group
+
     container_name   = "${aws_ecs_task_definition.case_study_umfrage_ecs_task.family}"
     container_port   = 80 # Specifying the container port
   }
@@ -103,6 +109,11 @@ resource "aws_ecs_service" "umfrage_service" {
     assign_public_ip = true                                                # Providing our containers with public IPs
     security_groups  = ["${aws_security_group.service_security_group.id}"] # Setting the security group
   }
+
+  depends_on = [
+    aws_lb_listener.listener
+  ]
+
   tags = {
     Modul = "pcls",
     Service = "ECS",
