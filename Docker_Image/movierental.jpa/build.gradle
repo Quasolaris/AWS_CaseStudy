@@ -1,0 +1,49 @@
+plugins {
+	id 'org.springframework.boot' version '2.7.4'
+	id 'io.spring.dependency-management' version '1.0.14.RELEASE'
+	id 'java'
+}
+
+repositories {
+	mavenCentral()
+}
+
+sourceCompatibility = 17
+targetCompatibility = 17
+compileJava.options.encoding = 'UTF-8'
+
+dependencies {
+	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	runtimeOnly("com.h2database:h2")
+	runtimeOnly("mysql:mysql-connector-java")
+	testImplementation("org.springframework.boot:spring-boot-starter-test")
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+	implementation("org.springframework.boot:spring-boot-starter-web")
+
+	// Criteria API
+	annotationProcessor('org.hibernate:hibernate-jpamodelgen:5.5.7.Final')
+
+	// MapStruct
+	implementation("org.mapstruct:mapstruct:1.4.0.Final")
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.4.0.Final")
+    
+    // Swagger, OpenAPI
+	implementation 'org.springdoc:springdoc-openapi-ui:1.6.11'
+}
+
+tasks.withType(JavaCompile) {
+	options.annotationProcessorGeneratedSourcesDirectory = file("$buildDir/generated/")
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs += ["$buildDir/generated/"]
+		}
+	}
+}
+
+test {
+  useJUnitPlatform()
+}

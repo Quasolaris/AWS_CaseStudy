@@ -1,0 +1,47 @@
+version: "3.8"
+
+volumes: 
+  db-data:  # make mysql data persistent even on container restart
+
+services:
+  mysql:
+    image: mysql:latest
+    command: --default-authentication-plugin=mysql_native_password
+    container_name: mysql # specifiy a name for an easy access to this container
+    ports:
+      - 3306:3306
+    restart: always
+    environment:
+      MYSQL_DATABASE: eaf
+      MYSQL_ROOT_PASSWORD: eaf  # use a different password just to show the order of preferences 
+    volumes:
+      - db-data:/var/lib/mysql
+
+  movierental:
+    build: ./movierental.jpa
+    image: movierental
+    container_name: movierental
+    ports:
+      - 8080:8080
+    depends_on: 
+      - mysql
+    environment: # Pass environment variables to the service
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eaf?useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: eaf
+      SPRING_PROFILES_ACTIVE: prod
+      TZ: CET
+    volumes:
+      - /tmp:/tmp
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    restart: always
+    ports:
+      - 8081:80
