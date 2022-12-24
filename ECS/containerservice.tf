@@ -1,5 +1,9 @@
-resource "aws_ecs_cluster" "case_study_umfrage_ecs_cluster" {
-  name = "case-study-umfrage-ecs-cluster"
+resource "aws_ecr_repository" "case_study_movierental_ecr_repo" {
+  name = "case-study-movierental-ecr-repo" # Naming the repository
+}
+
+resource "aws_ecs_cluster" "case_study_movierental_ecs_cluster" {
+  name = "case-study-movierental-ecs-cluster"
   tags = {
     Modul = "pcls",
     Service = "ECS",
@@ -7,58 +11,34 @@ resource "aws_ecs_cluster" "case_study_umfrage_ecs_cluster" {
   }
 }
 
-resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
-  family                   = "case-study-umfrage-task"
+resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
+  family                   = "case-study-movierental-task"
   container_definitions    = <<DEFINITION
   [
     {
-      "name": "case-study-umfrage-task",
-      "image": "docker.io/martialblog/limesurvey:latest",
+      "name": "case-study-movierental-task",
+      "image": "${aws_ecr_repository.case_study_movierental_ecr_repo.repository_url}",
       "essential": true,
       "environment": [
         {
-          "name": "DATABASE_URL",
-          "value": "postgresql://limesurvey:limesurvey$123@rds-limesurvey.cdhkghclow3g.us-east-1.rds.amazonaws.com:5432/limesurvey"
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:mysql://mysql:3306/eaf?useSSL=false"
         },
         {
-          "name": "RDS_HOSTNAME",
-          "value": "rds-limesurvey.cdhkghclow3g.us-east-1.rds.amazonaws.com"
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "root"
         },
         {
-          "name": "RDS_TYPE",
-          "value": "pgsql"
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "eaf"
         },
         {
-          "name": "RDS_PORT",
-          "value": "5432"
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
         },
         {
-          "name": "RDS_PASSWORD",
-          "value": "limesurvey$123"
-        },
-        {
-          "name": "RDS_DB_NAME",
-          "value": "limesurvey"
-        },
-        {
-          "name": "RDS_USERNAME",
-          "value": "limesurvey"
-        },
-        {
-          "name": "RDS_ADMIN_USER",
-          "value": "admin"
-        },
-        {
-          "name": "RDS_ADMIN_NAME",
-          "value": "admin"
-        },
-        {
-          "name": "RDS_ADMIN_PASSWORD",
-          "value": "admin$1234"
-        },
-        {
-          "name": "RDS_ADMIN_EMAIL",
-          "value": "admin@example.com"
+          "name": "TZ",
+          "value": "CET"
         }
       ],
       "ports": "8080:8080",
@@ -77,10 +57,10 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
   memory                   = 512         # Specifying the memory our container requires
   cpu                      = 256         # Specifying the CPU our container requires
-  execution_role_arn       = "arn:aws:iam::918617678239:role/LabRole" # replace with your own Account ID
+  execution_role_arn       = "arn:aws:iam::273859233498:role/LabRole" # replace with your own Account ID
 
   depends_on = [
-    aws_ecs_cluster.case_study_umfrage_ecs_cluster
+    aws_ecs_cluster.case_study_movierental_ecs_cluster
   ]
 
   tags = {
@@ -90,16 +70,16 @@ resource "aws_ecs_task_definition" "case_study_umfrage_ecs_task" {
   }
 }
 
-resource "aws_ecs_service" "umfrage_service" {
-  name            = "case-study-umfrage-service"                             # Naming our first service
-  cluster         = "${aws_ecs_cluster.case_study_umfrage_ecs_cluster.id}"             # Referencing our created Cluster
-  task_definition = "${aws_ecs_task_definition.case_study_umfrage_ecs_task.arn}" # Referencing the task our service will spin up
+resource "aws_ecs_service" "movierental_service" {
+  name            = "case-study-movierental-service"                             # Naming our first service
+  cluster         = "${aws_ecs_cluster.case_study_movierental_ecs_cluster.id}"             # Referencing our created Cluster
+  task_definition = "${aws_ecs_task_definition.case_study_movierental_ecs_task.arn}" # Referencing the task our service will spin up
   launch_type     = "FARGATE"
   desired_count   = 3 # Setting the number of containers we want deployed to 3
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn # Referencing our target group
 
-    container_name   = "${aws_ecs_task_definition.case_study_umfrage_ecs_task.family}"
+    container_name   = "${aws_ecs_task_definition.case_study_movierental_ecs_task.family}"
     container_port   = 80 # Specifying the container port
   }
 
@@ -110,7 +90,7 @@ resource "aws_ecs_service" "umfrage_service" {
   }
 
   depends_on = [
-    aws_ecs_cluster.case_study_umfrage_ecs_cluster,
+    aws_ecs_cluster.case_study_movierental_ecs_cluster,
     aws_lb_listener.listener
   ]
 
@@ -160,7 +140,7 @@ resource "aws_default_subnet" "default_subnet_c" {
 }
 
 resource "aws_alb" "application_load_balancer" {
-  name               = "umfrage-lb-tf" # Naming our load balancer
+  name               = "movierental-lb-tf" # Naming our load balancer
   load_balancer_type = "application"
   subnets = [ # Referencing the default subnets
     "${aws_default_subnet.default_subnet_a.id}",

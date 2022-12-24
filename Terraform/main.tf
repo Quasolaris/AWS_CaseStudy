@@ -5,10 +5,6 @@ provider "aws" {
     region = "${var.region}"
 }
 
-module "ecr" {
-    source = "../ECR"
-}
-
 #module "s3" {
 #    source = "../S3"
 #    bucket_name = "som-s3-bucket-tf-case-study-umfrage-tool"
@@ -18,9 +14,9 @@ module "ecr" {
 #    source = "../RDS"
 #}
 
-#module "ecs" {
-#    source = "../ECS"  
-#}
+module "ecs" {
+    source = "../ECS"  
+}
 
 #module "cdn" {
 #    source = "../CDN"
