@@ -2,6 +2,26 @@ resource "aws_ecr_repository" "case_study_movierental_ecr_repo" {
   name = "case-study-movierental-ecr-repo" # Naming the repository
 }
 
+resource "aws_db_instance" "movierental_db" {
+
+  allocated_storage = 20
+  identifier = "rds-movierental"
+  storage_type = "gp2"
+  engine = "mysql"
+  instance_class = "db.t3.micro"
+  name = "eaf"
+  username = "root"
+  password = "movieRental$123"
+  publicly_accessible    = true
+  skip_final_snapshot    = true
+
+
+  tags = {
+    Name = "movierental-db"
+    Modul = "pcls"
+  }
+}
+
 resource "aws_ecs_cluster" "case_study_movierental_ecs_cluster" {
   name = "case-study-movierental-ecs-cluster"
   tags = {
@@ -22,7 +42,7 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
       "environment": [
         {
           "name": "SPRING_DATASOURCE_URL",
-          "value": "jdbc:mysql://mysql:3306/eaf?useSSL=false"
+          "value": "${aws_db_instance.movierental_db.address}"
         },
         {
           "name": "SPRING_DATASOURCE_USERNAME",
@@ -30,7 +50,7 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
         },
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "value": "eaf"
+          "value": "movieRental$123"
         },
         {
           "name": "SPRING_PROFILES_ACTIVE",
@@ -44,8 +64,8 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
       "ports": "8080:8080",
       "portMappings": [
         {
-          "containerPort": 80,
-          "hostPort": 80
+          "containerPort": 8080,
+          "hostPort": 8080
         }
       ],
       "memory": 512,
@@ -80,7 +100,7 @@ resource "aws_ecs_service" "movierental_service" {
     target_group_arn = aws_lb_target_group.target_group.arn # Referencing our target group
 
     container_name   = "${aws_ecs_task_definition.case_study_movierental_ecs_task.family}"
-    container_port   = 80 # Specifying the container port
+    container_port   = 8080 # Specifying the container port
   }
 
   network_configuration {
@@ -164,8 +184,8 @@ resource "aws_security_group" "load_balancer_security_group" {
     Komponente = "SecurityGroup"
   }
   ingress {
-    from_port   = 80 # Allowing traffic in from port 80
-    to_port     = 80
+    from_port   = 8080 # Allowing traffic in from port 80
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"] # Allowing traffic in from all sources
   }
@@ -182,7 +202,7 @@ resource "aws_security_group" "load_balancer_security_group" {
 
 resource "aws_lb_target_group" "target_group" {
   name        = "target-group"
-  port        = 80
+  port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = "${aws_default_vpc.default_vpc.id}" # Referencing the default VPC
@@ -199,7 +219,7 @@ resource "aws_lb_target_group" "target_group" {
 
 resource "aws_lb_listener" "listener" {
   load_balancer_arn = "${aws_alb.application_load_balancer.arn}" # Referencing our load balancer
-  port              = "80"
+  port              = "8080"
   protocol          = "HTTP"
   default_action {
     type             = "forward"
