@@ -2,31 +2,11 @@ resource "aws_ecr_repository" "case_study_movierental_ecr_repo" {
   name = "case-study-movierental-ecr-repo" # Naming the repository
 }
 
-resource "aws_db_instance" "movierental_db" {
-
-  allocated_storage = 20
-  identifier = "rds-movierental"
-  storage_type = "gp2"
-  engine = "mysql"
-  instance_class = "db.t3.micro"
-  name = "eaf"
-  username = "root"
-  password = "movieRental$123"
-  publicly_accessible    = true
-  skip_final_snapshot    = true
-
-
-  tags = {
-    Name = "movierental-db"
-    Modul = "pcls"
-  }
-}
-
 resource "aws_ecs_cluster" "case_study_movierental_ecs_cluster" {
   name = "case-study-movierental-ecs-cluster"
   tags = {
-    Modul = "pcls",
-    Service = "ECS",
+    Modul      = "pcls",
+    Service    = "ECS",
     Komponente = "Cluster"
   }
 }
@@ -42,7 +22,7 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
       "environment": [
         {
           "name": "SPRING_DATASOURCE_URL",
-          "value": "${aws_db_instance.movierental_db.address}"
+          "value": "jdbc:mysql://mysql:3306/eaf?useSSL=false"
         },
         {
           "name": "SPRING_DATASOURCE_USERNAME",
@@ -50,7 +30,7 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
         },
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "value": "movieRental$123"
+          "value": "eaf"
         },
         {
           "name": "SPRING_PROFILES_ACTIVE",
@@ -61,7 +41,13 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
           "value": "CET"
         }
       ],
-      "ports": "8080:8080",
+      "mountPoints": [
+        {
+          "containerPath": "/tmp",
+          "sourceVolume": "Tmp"
+        }
+      ],
+      "name": "movierental",
       "portMappings": [
         {
           "containerPort": 8080,
@@ -70,13 +56,72 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
       ],
       "memory": 512,
       "cpu": 256
+    },
+    {
+      "command": [
+        "--default-authentication-plugin=mysql_native_password"
+      ],
+      "environment": [{
+          "name": "MYSQL_DATABASE",
+          "value": "eaf"
+        },
+        {
+          "name": "MYSQL_ROOT_PASSWORD",
+          "value": "eaf"
+        }
+      ],
+      "essential": true,
+      "image": "mysql:latest",
+      "mountPoints": [{
+        "containerPath": "/var/lib/mysql",
+        "sourceVolume": "Db-Data"
+      }],
+      "name": "mysql",
+      "portMappings": [{
+        "containerPort": 3306,
+        "hostPort": 3306
+      }]
+    },
+    {
+      "environment": [{
+          "name": "PMA_HOST",
+          "value": "mysql"
+        },
+        {
+          "name": "PMA_PORT",
+          "value": "3306"
+        }
+      ],
+      "essential": true,
+      "image": "phpmyadmin:latest",
+      "name": "phpmyadmin",
+      "portMappings": [{
+        "containerPort": 80,
+        "hostPort": 8081
+      }]
+    }
+  ],
+  "family": "",
+  "volumes": [{
+      "host": {
+        "sourcePath": "db-data"
+      },
+      "name": "Db-Data"
+    },
+    {
+      "host": {
+        "sourcePath": "/tmp"
+      },
+      "name": "Tmp"
     }
   ]
+}
+  ]
   DEFINITION
-  requires_compatibilities = ["FARGATE"] # Stating that we are using ECS Fargate
-  network_mode             = "awsvpc"    # Using awsvpc as our network mode as this is required for Fargate
-  memory                   = 512         # Specifying the memory our container requires
-  cpu                      = 256         # Specifying the CPU our container requires
+  requires_compatibilities = ["FARGATE"]                              # Stating that we are using ECS Fargate
+  network_mode             = "awsvpc"                                 # Using awsvpc as our network mode as this is required for Fargate
+  memory                   = 512                                      # Specifying the memory our container requires
+  cpu                      = 256                                      # Specifying the CPU our container requires
   execution_role_arn       = "arn:aws:iam::273859233498:role/LabRole" # replace with your own Account ID
 
   depends_on = [
@@ -84,23 +129,23 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
   ]
 
   tags = {
-    Modul = "pcls",
-    Service = "ECS",
+    Modul      = "pcls",
+    Service    = "ECS",
     Komponente = "Task"
   }
 }
 
 resource "aws_ecs_service" "movierental_service" {
-  name            = "case-study-movierental-service"                             # Naming our first service
-  cluster         = "${aws_ecs_cluster.case_study_movierental_ecs_cluster.id}"             # Referencing our created Cluster
-  task_definition = "${aws_ecs_task_definition.case_study_movierental_ecs_task.arn}" # Referencing the task our service will spin up
+  name            = "case-study-movierental-service"                            # Naming our first service
+  cluster         = aws_ecs_cluster.case_study_movierental_ecs_cluster.id       # Referencing our created Cluster
+  task_definition = aws_ecs_task_definition.case_study_movierental_ecs_task.arn # Referencing the task our service will spin up
   launch_type     = "FARGATE"
   desired_count   = 3 # Setting the number of containers we want deployed to 3
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn # Referencing our target group
 
-    container_name   = "${aws_ecs_task_definition.case_study_movierental_ecs_task.family}"
-    container_port   = 8080 # Specifying the container port
+    container_name = aws_ecs_task_definition.case_study_movierental_ecs_task.family
+    container_port = 8080 # Specifying the container port
   }
 
   network_configuration {
@@ -115,15 +160,15 @@ resource "aws_ecs_service" "movierental_service" {
   ]
 
   tags = {
-    Modul = "pcls",
-    Service = "ECS",
+    Modul      = "pcls",
+    Service    = "ECS",
     Komponente = "Service"
   }
 }
 
 resource "aws_security_group" "service_security_group" {
   tags = {
-    Modul = "pcls",
+    Modul   = "pcls",
     Service = "SecurityGroup",
   }
   ingress {
@@ -135,9 +180,9 @@ resource "aws_security_group" "service_security_group" {
   }
 
   egress {
-    from_port   = 0 # Allowing any incoming port
-    to_port     = 0 # Allowing any outgoing port
-    protocol    = "-1" # Allowing any outgoing protocol 
+    from_port   = 0             # Allowing any incoming port
+    to_port     = 0             # Allowing any outgoing port
+    protocol    = "-1"          # Allowing any outgoing protocol 
     cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
   }
 }
@@ -170,8 +215,8 @@ resource "aws_alb" "application_load_balancer" {
   # Referencing the security group
   security_groups = ["${aws_security_group.load_balancer_security_group.id}"]
   tags = {
-    Modul = "pcls",
-    Service = "Loadbalancer",
+    Modul      = "pcls",
+    Service    = "Loadbalancer",
     Komponente = "Loadbalancer"
   }
 }
@@ -179,8 +224,8 @@ resource "aws_alb" "application_load_balancer" {
 # Creating a security group for the load balancer:
 resource "aws_security_group" "load_balancer_security_group" {
   tags = {
-    Modul = "pcls",
-    Service = "Loadbalancer",
+    Modul      = "pcls",
+    Service    = "Loadbalancer",
     Komponente = "SecurityGroup"
   }
   ingress {
@@ -191,9 +236,9 @@ resource "aws_security_group" "load_balancer_security_group" {
   }
 
   egress {
-    from_port   = 0 # Allowing any incoming port
-    to_port     = 0 # Allowing any outgoing port
-    protocol    = "-1" # Allowing any outgoing protocol 
+    from_port   = 0             # Allowing any incoming port
+    to_port     = 0             # Allowing any outgoing port
+    protocol    = "-1"          # Allowing any outgoing protocol 
     cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
   }
 }
@@ -205,24 +250,24 @@ resource "aws_lb_target_group" "target_group" {
   port        = 8080
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = "${aws_default_vpc.default_vpc.id}" # Referencing the default VPC
+  vpc_id      = aws_default_vpc.default_vpc.id # Referencing the default VPC
   health_check {
     matcher = "200,301,302"
-    path = "/"
+    path    = "/"
   }
   tags = {
-    Modul = "pcls",
-    Service = "Loadbalancer",
+    Modul      = "pcls",
+    Service    = "Loadbalancer",
     Komponente = "TargetGroup"
   }
 }
 
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = "${aws_alb.application_load_balancer.arn}" # Referencing our load balancer
+  load_balancer_arn = aws_alb.application_load_balancer.arn # Referencing our load balancer
   port              = "8080"
   protocol          = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arn = "${aws_lb_target_group.target_group.arn}" # Referencing our target group
+    target_group_arn = aws_lb_target_group.target_group.arn # Referencing our target group
   }
 }
