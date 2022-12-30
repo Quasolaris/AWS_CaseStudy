@@ -41,12 +41,6 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
           "value": "CET"
         }
       ],
-      "mountPoints": [
-        {
-          "containerPath": "/tmp",
-          "sourceVolume": "Tmp"
-        }
-      ],
       "name": "movierental",
       "portMappings": [
         {
@@ -62,26 +56,22 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
         "--default-authentication-plugin=mysql_native_password"
       ],
       "environment": [{
-          "name": "MYSQL_DATABASE",
-          "value": "eaf"
-        },
-        {
-          "name": "MYSQL_ROOT_PASSWORD",
-          "value": "eaf"
-        }
+        "name": "MYSQL_DATABASE",
+        "value": "eaf"
+      },
+      {
+        "name": "MYSQL_ROOT_PASSWORD",
+        "value": "eaf"
+      }
       ],
       "essential": true,
       "image": "mysql:latest",
-      "mountPoints": [{
-        "containerPath": "/var/lib/mysql",
-        "sourceVolume": "Db-Data"
-      }],
       "name": "mysql",
       "portMappings": [{
-        "containerPort": 3306,
-        "hostPort": 3306
+      "containerPort": 3306,
+      "hostPort": 3306
       }]
-    },
+    }, 
     {
       "environment": [{
           "name": "PMA_HOST",
@@ -97,25 +87,9 @@ resource "aws_ecs_task_definition" "case_study_movierental_ecs_task" {
       "name": "phpmyadmin",
       "portMappings": [{
         "containerPort": 80,
-        "hostPort": 8081
+        "hostPort": 80
       }]
     }
-  ],
-  "family": "",
-  "volumes": [{
-      "host": {
-        "sourcePath": "db-data"
-      },
-      "name": "Db-Data"
-    },
-    {
-      "host": {
-        "sourcePath": "/tmp"
-      },
-      "name": "Tmp"
-    }
-  ]
-}
   ]
   DEFINITION
   requires_compatibilities = ["FARGATE"]                              # Stating that we are using ECS Fargate
