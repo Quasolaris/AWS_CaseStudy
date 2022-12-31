@@ -2,11 +2,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>ch.fhnw.pcls</groupId>
-  <artifactId>casestudylambda</artifactId>
+  <artifactId>${artifact}</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
-  <name>case-study-lambda</name>
-  <description>Java code for a simple lambda function in AWS needed for the case study of the fhnw module pcls</description>
+  <version>${version}</version>
+  <name>java-${artifact}</name>
+  <description>${description}</description>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>

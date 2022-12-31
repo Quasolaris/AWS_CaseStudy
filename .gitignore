@@ -16,6 +16,8 @@ crash.*.log
 *.tfvars
 *.tfvars.json
 variable.tf
+# Exclude tfplan files
+*.tfplan
 
 # Ignore override files as they are usually used to override resources locally and so
 # are not checked in
