@@ -20,7 +20,7 @@ data "template_file" "pom_template" {
   
   vars = {
     artifact      = "casestudylambda"
-    version       = "1.0"
+    version       = "1.3" # change version number in order to redeploy the function
     description   = "case-study-lambda Lambda Function"
   }
 }
