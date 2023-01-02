@@ -9,7 +9,7 @@
     <style>
 		div {
 			width: 400px;
-			height: 130px;
+			height: 330px;
 			border: 2px solid black;
 			padding: 15px;
 			left: 27%;
@@ -23,19 +23,42 @@
         Integer Division
     </h1>
     <h3>
-       Type which numbers should be divided
+       Type two numbers to divide them
     </h3>
 
 
-<div class="container">
-    <form action="/action_page.php">
-        <label for="numbera">Number a:</label><br>
-        <input type="text" id="numbera" name="numbera" value="0"><br>
-        <label for="numberb">Number b:</label><br>
-        <input type="text" id="numberb" name="numberb" value="0"><br><br>
-        <input type="submit" value="Submit">
-    </form>
-</center>
+    <div class="container">
+            <h4>Number A</h4>
+            <input type="text" placeholder="0" id="numbera">
+            <br>
+            <h4>Number B</h4>
+            <input type="text" placeholder="0" id="numberb">
+            <br>
+            <br>
+            <button type="button" onclick="send();">Get Value</button>
+        <script>
+
+            function send() {
+            let numberA = document.getElementById("numbera").value;
+            let numberB = document.getElementById("numberb").value;
+            let arguments = [
+                numberA,
+                numberB
+            ]
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "https://www.google.com", true);
+            xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                cb(xmlhttp.responseText);
+                }
+            };
+            xmlhttp.send(JSON.stringify(arguments));
+
+            }
+        </script>
+    </center>
+</div>
 </body>
 
 
