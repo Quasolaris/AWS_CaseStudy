@@ -102,7 +102,7 @@ EOF
 }
 
 resource "aws_lambda_function_url" "test_latest" {
-  function_name      = aws_lambda_function.lambda_aws_cli
+  function_name      = aws_lambda_function.lambda_aws_cli.function_name
   authorization_type = "NONE"
   depends_on = [aws_lambda_function.lambda_aws_cli]
 }

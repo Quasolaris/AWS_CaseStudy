@@ -12,12 +12,13 @@ import java.util.List;
 // Handler value: example.HandlerDivide
 public class Handler implements RequestHandler<List<Integer>, Integer>{
   Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
   @Override
   public Integer handleRequest(List<Integer> event, Context context)
   {
     LambdaLogger logger = context.getLogger();
     // process event
-    if ( event.size() != 2 )
+    if ( event.size() < 2 )
     {
       throw new InputLengthException("Input must be an array that contains 2 numbers.");
     }
