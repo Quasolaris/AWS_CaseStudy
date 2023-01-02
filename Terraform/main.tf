@@ -5,10 +5,10 @@ provider "aws" {
     region = "${var.region}"
 }
 
-#module "s3" {
-#    source = "../S3"
-#    bucket_name = "som-s3-bucket-tf-case-study-umfrage-tool"
-#}
+module "s3" {
+    source = "../S3"
+    bucket_name = "s3-static-webpage-casestudy-fhnw"
+}
 
 #module "cdn" {
 #    source = "../CDN"
@@ -20,7 +20,7 @@ data "template_file" "pom_template" {
   
   vars = {
     artifact      = "casestudylambda"
-    version       = "1.3" # change version number in order to redeploy the function
+    version       = "1.4" # change version number in order to redeploy the function
     description   = "case-study-lambda Lambda Function"
   }
 }
@@ -48,12 +48,13 @@ locals {
     lambda_payload_filename = "../Lambda/target/casestudylambda-1.0.jar"
 }
 
+
 resource "aws_lambda_function" "lambda_aws_cli" {
   
   filename                  = local.lambda_payload_filename
   
   function_name             = "casestudylambda"
-  role                      = "arn:aws:iam::273859233498:role/LabRole"
+  role                      = "arn:aws:iam::918617678239:role/LabRole"
   handler                   = "main.java.ch.fhnw.pcls.Handler"
   runtime                   = "java11"
   memory_size               = 512
