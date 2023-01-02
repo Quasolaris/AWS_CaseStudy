@@ -1,11 +1,11 @@
 variable "aws_access_key" {
-  default = "ASIAT7Q2II3NJ3UL44FE"
+  default = "ASIAT7Q2II3NICDXID53"
 }
 variable "aws_secret_key" {
-  default = "w08ANSTxjYu6iGP5CjBqV1RKFqsLy6Zsgwv4g1pb"
+  default = "AxJGhDfQeldCODts9JuTctQ2s7Ub/svdZ8flvjLn"
 }
 variable "aws_session_token" {
-  default = "FwoGZXIvYXdzEIn//////////wEaDJOCStcBRL+Pm4PBhCLCAd+hks+WwgjnPWuoSf0IOsPSYPUPLXZudxO2WfjkXqmJ/PI0EpGHH9Iw6PeORd+X6fEdAFiGD0iunZve6Y56pqZPGtkBJvTtnHlWcZdUMLG/6lWenQDyCy68BuiqLXCKfSsWJCkfZRqcOdsijyT4S3RBTW+hCsLTqm+OZ2aNAiu7B6ajVNC8ISPFtnUu4jct6IG6vKhz6Av0zao81aTsLZCOGySrA7v/omQGIXGagTiao0bEYEK+NcwgJSYFSqqv/0/+KIaAzJ0GMi2M2imvz8UF+ky2AWg6rfTkHi+9tWGS6z7LKrTUB5tWKPQ7eI9C37nDdR8JsoQ="
+  default = "FwoGZXIvYXdzEI7//////////wEaDKcziAs0neeQHoHkhCLCARikHDOmAVYacrH7ok1pDdLip2N8PxPNN+oOBlVcKswUE+hA3wivY5HKzcsYYPgrIwxoPci+Mf/SpreTR+rsQyGWJ5+Kx0NHRlchCcv9rXqZt+JNDoiDmYHDcWgbYlnVM6I4qh4KFXXfSwko2b5tNCswErweVYC5Bo5YvzR/xUDqp3myBaAncUT73esmX0XUr/jfs8EXaYrShRdlEPA2+z88h2YLtUAkPyvLQZnRSrhJhd2K8S7QAOEeQjVwh5xseHnEKLSGzZ0GMi3bW7CWf8d/dt+tbRysjNSWCEOEwJ4uOkTg8hH6xit70zqDNV8luQM9KucCBDo="
 }
 variable "region" {
   default = "us-east-1"
