@@ -47,7 +47,7 @@
             ]
 
             xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "https://bjyhrldzxxothe4vrhnxxils5i0yxdap.lambda-url.us-east-1.on.aws/", true);
+            xmlhttp.open("POST", "https://l57ka9rbcb.execute-api.us-east-1.amazonaws.com/prod", true);
             xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 cb(xmlhttp.responseText);

@@ -40,3 +40,4 @@ terraform.rc
 .settings/
 .idea/
 Lambda/target/
+.vscode/
