@@ -54,7 +54,7 @@ resource "aws_lambda_function" "lambda_aws_cli" {
   filename                  = local.lambda_payload_filename
   
   function_name             = "casestudylambda"
-  role                      = "arn:aws:iam::918617678239:role/LabRole"
+  role                      = "arn:aws:iam::273859233498:role/LabRole"
   handler                   = "main.java.ch.fhnw.pcls.Handler"
   runtime                   = "java11"
   memory_size               = 512

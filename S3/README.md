@@ -24,4 +24,4 @@ xmlhttp.send(JSON.stringify(arguments));
 ```
 Replace the index.html inside the bucket with the updated one.
 
-Go to the public URL of the bucket and make a request, chekc the network-debugging (F12) of your browser to see if the request works. When you get a Cross-Origin error then the request worked. Now to go the Lambda function and check the logs.
+Go to the public URL of the bucket and make a request, check the network-debugging (F12) of your browser to see if the request works. When you get a Cross-Origin error then the request worked. Now to go the Lambda function and check the logs.

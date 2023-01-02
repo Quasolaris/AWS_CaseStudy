@@ -1,7 +1,11 @@
 
 resource "aws_s3_bucket" "webpage_bucket_casestudy_fhnw" {
     bucket = "${var.bucket_name}"
-    acl = "${var.acl_value}"
+}
+
+resource "aws_s3_bucket_acl" "webpage_bucket_casestudy_acl" {
+  bucket = aws_s3_bucket.webpage_bucket_casestudy_fhnw.id
+  acl    = "${var.acl_value}"
 }
 
 resource "aws_s3_object" "file_upload_index" {
