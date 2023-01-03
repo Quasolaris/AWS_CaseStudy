@@ -1,4 +1,4 @@
-package main.java.ch.fhnw.pcls;
+package ch.fhnw.pcls;
 
 import java.lang.RuntimeException;
 

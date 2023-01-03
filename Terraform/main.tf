@@ -145,8 +145,10 @@ resource "aws_lambda_function" "lambda_aws_cli" {
   
   filename                  = local.lambda_payload_filename
   
+
   function_name             = "${var.lambdaname}"
   role                      = "arn:aws:iam::918617678239:role/LabRole"
+
   handler                   = "main.java.ch.fhnw.pcls.Handler"
   runtime                   = "java11"
   memory_size               = 512
@@ -197,4 +199,13 @@ resource "aws_lambda_function_url" "test_latest" {
   function_name      = aws_lambda_function.lambda_aws_cli.function_name
   authorization_type = "NONE"
   depends_on = [aws_lambda_function.lambda_aws_cli]
+
+  cors {
+    allow_credentials = false
+    allow_origins     = ["*"]
+    allow_methods     = ["*"]
+    allow_headers     = ["date", "keep-alive", "access-control-allow-headers", "access-control-allow-origin", "x-requested-with"]
+    expose_headers    = ["keep-alive", "date", "access-control-allow-headers", "access-control-allow-origin", "x-requested-with"]
+    max_age           = 86400
+  }
 }
