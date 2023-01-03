@@ -7,7 +7,7 @@ provider "aws" {
 
 module "s3" {
     source = "../S3"
-    bucket_name = "s3-static-webpage-casestudy-fhnw"
+    bucket_name = "${var.s3Bucket}"
 }
 
 resource "tls_private_key" "fhnw_private_casestudy" {
@@ -15,13 +15,14 @@ resource "tls_private_key" "fhnw_private_casestudy" {
   rsa_bits = "4096"
 }
 
+# The error for a missing value can be ignored (new Terraform rule, field is READONLY)
 resource "tls_self_signed_cert" "cert_fhnw_casestudy" {
 
   private_key_pem = tls_private_key.fhnw_private_casestudy.private_key_pem
 
   subject {
-    common_name  = "example.com"
-    organization = "ACME Examples, Inc"
+    common_name  = "fhnw_case_study.ch"
+    organization = "FHNW PCLS CaseStudy"
   }
 
   validity_period_hours = 12
@@ -52,7 +53,7 @@ resource "aws_iam_server_certificate" "fhnw_cert" {
 }
 
 resource "aws_elb" "loadbalancer_casestudy_fhnw" {
-  name               = "staticwebpageloadbalancer"
+  name               = "${var.laodbalancer}"
   availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
 
@@ -133,7 +134,7 @@ resource "aws_lambda_function" "lambda_aws_cli" {
   
   filename                  = local.lambda_payload_filename
   
-  function_name             = "casestudylambda"
+  function_name             = "${var.lambdaname}"
   role                      = "arn:aws:iam::918617678239:role/LabRole"
   handler                   = "main.java.ch.fhnw.pcls.Handler"
   runtime                   = "java11"

@@ -21,3 +21,17 @@ variable tags {
     "assignment": "casestudy"
   }
 }
+
+# variable names for build script
+
+variable "s3Bucket" {
+  default = "s3-static-webpage-casestudy-fhnw"
+}
+
+variable "laodbalancer" {
+  default = "staticwebpageloadbalancer"
+}
+
+variable "lambdaname" {
+  default = "casestudylambda"
+}
