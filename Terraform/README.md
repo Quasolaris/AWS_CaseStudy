@@ -42,7 +42,17 @@ variable "region" {
 
 6. Remove the configured infrastructure:
 `terraform destroy`
+### Activate HTTPS LoadBalancer
+YOu need to comment in the marked lines in the main.tf file and also comment in the following:
 
+Under loadbalancer ressource in main.tf
+````terraform
+  depends_on = [
+    module.s3,
+    # comment the fhnw_cert if already run once
+    aws_iam_server_certificate.fhnw_cert
+  ]
+````
 ### Troubleshooting
 In case you see the following error during the deployment (`terraform apply`):
 ```

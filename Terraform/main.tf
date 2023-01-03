@@ -10,6 +10,9 @@ module "s3" {
     bucket_name = "${var.s3Bucket}"
 }
 
+#==========================================================
+# following is the needed cert creation for HTTPS
+/*
 resource "tls_private_key" "fhnw_private_casestudy" {
   algorithm = "RSA"
   rsa_bits = "4096"
@@ -21,7 +24,7 @@ resource "tls_self_signed_cert" "cert_fhnw_casestudy" {
   private_key_pem = tls_private_key.fhnw_private_casestudy.private_key_pem
 
   subject {
-    common_name  = "fhnw_case_study.ch"
+    common_name  = "s3-static-webpage-casestudy-fhnw.s3.amazonaws.com"
     organization = "FHNW PCLS CaseStudy"
   }
 
@@ -45,12 +48,17 @@ resource "aws_acm_certificate" "cert" {
 }
 
 resource "aws_iam_server_certificate" "fhnw_cert" {
-  name             = "fhnw_cert"
+  name             = "fhnw_cert_1"
   private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
   certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
 
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 }
+*/
+# ==============================================================
+
+
+
 
 resource "aws_elb" "loadbalancer_casestudy_fhnw" {
   name               = "${var.laodbalancer}"
@@ -64,14 +72,16 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     lb_protocol       = "http"
   }
 
+  # comment in for HTTPS
+  /*
   listener {
     instance_port      = 8000
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert" #change to your AWS id
+    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert_1" #change to your AWS id
   }
-
+  */
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -85,8 +95,9 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
   }
 
   depends_on = [
-    module.s3,
-    aws_iam_server_certificate.fhnw_cert
+    module.s3
+    # comment the fhnw_cert if already run once
+    #aws_iam_server_certificate.fhnw_cert
   ]
 }
 
