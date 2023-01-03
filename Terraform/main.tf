@@ -10,6 +10,86 @@ module "s3" {
     bucket_name = "s3-static-webpage-casestudy-fhnw"
 }
 
+resource "tls_private_key" "fhnw_private_casestudy" {
+  algorithm = "RSA"
+  rsa_bits = "4096"
+}
+
+resource "tls_self_signed_cert" "cert_fhnw_casestudy" {
+
+  private_key_pem = tls_private_key.fhnw_private_casestudy.private_key_pem
+
+  subject {
+    common_name  = "example.com"
+    organization = "ACME Examples, Inc"
+  }
+
+  validity_period_hours = 12
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+  ]
+
+  depends_on = [tls_private_key.fhnw_private_casestudy]
+}
+
+
+resource "aws_acm_certificate" "cert" {
+  private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
+  certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
+
+  depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
+}
+
+resource "aws_iam_server_certificate" "fhnw_cert" {
+  name             = "fhnw_cert"
+  private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
+  certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
+
+  depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
+}
+
+resource "aws_elb" "loadbalancer_casestudy_fhnw" {
+  name               = "staticwebpageloadbalancer"
+  availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+
+
+  listener {
+    instance_port     = 8000
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
+  }
+
+  listener {
+    instance_port      = 8000
+    instance_protocol  = "http"
+    lb_port            = 443
+    lb_protocol        = "https"
+    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert" #change to your AWS id
+  }
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:8000/"
+    interval            = 30
+  }
+
+  tags = {
+    Name = "loadbalancer-http-8080"
+  }
+
+  depends_on = [
+    module.s3,
+    aws_iam_server_certificate.fhnw_cert
+  ]
+}
+
+
 #module "cdn" {
 #    source = "../CDN"
 #}
@@ -20,7 +100,7 @@ data "template_file" "pom_template" {
   
   vars = {
     artifact      = "casestudylambda"
-    version       = "1.4" # change version number in order to redeploy the function
+    version       = "1.8" # change version number in order to redeploy the function
     description   = "case-study-lambda Lambda Function"
   }
 }
