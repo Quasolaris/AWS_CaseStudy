@@ -48,16 +48,17 @@
 
             xmlhttp = new XMLHttpRequest();
             xmlhttp.open("POST", "https://du2ejvr34fzrdoi2aq4mpxyara0qjbvp.lambda-url.us-east-1.on.aws/", true);
-            xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest'); 
+            xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xmlhttp.setRequestHeader('Access-Control-Allow-Methods', '*');
             xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-            xmlhttp.onreadystatechange = function () { //Call a function when the state changes.
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-                cb(xmlhttp.responseText);
-                }
-            };
+            xmlhttp.setRequestHeader('Access-Control-Allow-Max-Age', '32000');
+            xmlhttp.setRequestHeader('Content-type', 'application/json')
+            xmlhttp.setRequestHeader('Access-Control-Allow-Headers', '*');
             xmlhttp.send(JSON.stringify(arguments));
 
             }
+
+
         </script>
     </div>
     </center>

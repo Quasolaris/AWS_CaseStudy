@@ -48,15 +48,16 @@ resource "aws_acm_certificate" "cert" {
 }
 
 resource "aws_iam_server_certificate" "fhnw_cert" {
-  name             = "fhnw_cert_1"
+  name             = "fhnw_cert"
+  /*
   private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
   certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
 
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
+
 }
 */
 # ==============================================================
-
 
 
 
@@ -73,15 +74,15 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
   }
 
   # comment in for HTTPS
-  /*
+
   listener {
     instance_port      = 8000
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert_1" #change to your AWS id
+    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert" #change to your AWS id
   }
-  */
+
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 2
@@ -100,7 +101,6 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     #aws_iam_server_certificate.fhnw_cert
   ]
 }
-
 
 #module "cdn" {
 #    source = "../CDN"
@@ -208,4 +208,59 @@ resource "aws_lambda_function_url" "test_latest" {
     expose_headers    = ["keep-alive", "date", "access-control-allow-headers", "access-control-allow-origin", "x-requested-with"]
     max_age           = 86400
   }
+}
+
+#creating the Cloudfront distribution :
+resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
+  enabled             = true
+  #aliases             = [aws_elb.loadbalancer_casestudy_fhnw.dns_name] # commented out for default certificate
+
+  # alb = application load balancer, need the name as variable
+  origin {
+    domain_name = aws_elb.loadbalancer_casestudy_fhnw.dns_name
+    origin_id   = aws_elb.loadbalancer_casestudy_fhnw.dns_name
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id       = aws_elb.loadbalancer_casestudy_fhnw.dns_name
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      headers      = []
+      query_string = true
+
+      cookies {
+        forward = "all"
+      }
+    }
+
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "whitelist"
+      locations        = ["IN", "US", "CA"]
+    }
+  }
+
+  tags = var.tags
+
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+
+
+  depends_on = [
+    aws_elb.loadbalancer_casestudy_fhnw
+  ]
 }

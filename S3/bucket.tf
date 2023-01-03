@@ -9,6 +9,23 @@ resource "aws_s3_bucket" "webpage_bucket_casestudy_fhnw" {
     }
 }
 
+resource "aws_s3_bucket_cors_configuration" "example" {
+    bucket = "${var.bucket_name}"
+
+    cors_rule {
+        allowed_headers = ["*"]
+        allowed_methods = ["PUT", "POST"]
+        allowed_origins = ["*"]
+        expose_headers  = ["ETag"]
+        max_age_seconds = 3000
+    }
+
+    cors_rule {
+        allowed_methods = ["GET"]
+        allowed_origins = ["*"]
+    }
+}
+
 resource "aws_s3_object" "file_upload_index" {
     bucket      =  "${var.bucket_name}"
     key         =  "index.html"
