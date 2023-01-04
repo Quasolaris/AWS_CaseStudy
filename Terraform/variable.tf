@@ -1,39 +1,13 @@
 variable "aws_access_key" {
-
-  default = "ASIA5LYPBMGP2NBCMSE6"
+  default = "ASIAT7Q2II3NGA3SUVVM"
 }
 variable "aws_secret_key" {
-  default = "v6fJDXNvoGdPJS864Dv7Q0/XNEwuuKhyLNnbqpr/"
+  default = "1gnuknab3sl+mTi1slp9PJ4DOQIRcVaWpfnt0BoV"
 }
 variable "aws_session_token" {
-  default = "FwoGZXIvYXdzEKD//////////wEaDJwSjQ0xZFHvMOJZNSK/ATLNchSL0ao4sHNGbAGmly8jSRS+KX7ivih771zCZBMw897vajeLxdjKWbflbOqenZYfJ4RazseglYstozU+xtHvC1EQ6PuQwqArs6rffVQ4BhFaaUKESYf2BRtdXy4AsXXdMkSjRLgoWsjoZiHoC9i2Agf+ktxVMkQUsnlamm8ot55TmxAVPJ9R62gD3iu7rFyy4USoUDoSnls0UlEw/sO2uykAtkyezkzaT64VI5AGc0YyTvyG1pQTUpyuduAmKKHz0J0GMi1Wh5c/mm7XPrWrXFtGLwSOb8SyW9/Q6S7bRorUNtaVlR4G4ARKbD4g+v2+LeE="
+  default = "FwoGZXIvYXdzELv//////////wEaDJKCeQcd4arR4KD4dCLCAZzAa+v5li6B0pEc9vU8d4CiAZMmPJh9Z/zSq/7C4PTYLW3I6rqRZAG64/BkEL9FxCvj68JWQZWYT3rFwbsmK4RlPAPIgWqjZ7gT87ENhScxWenTPEE56xBBARYamDnkuC6FVQFcLqhrOGJVYeDLPfzUt1w8JIxL++IZyYfSlfleIc08ZeiBF35bNGTdy+fBjJmTIzUIB6Ub7+U2v9dCCM9DJ2kXs42Chzfpozc/B4vaoBqMgJCMkRlipvSzXzf6/YdIKJnn1p0GMi1ZRkJhpPwLQ4/Zvh0cxbbSdOeilMjGGV6FCFCxYOqxR6GvsU4COtsIIuB4w7Q="
 
 }
 variable "region" {
   default = "us-east-1"
-}
-
-
-# lambda function variables
-variable tags {
-  description     = "Tag list"
-  type            = map(any)
-  default = {
-    "module": "pcls",
-    "assignment": "casestudy"
-  }
-}
-
-# variable names for build script
-
-variable "s3Bucket" {
-  default = "s3-static-webpage-casestudy-fhnw"
-}
-
-variable "laodbalancer" {
-  default = "staticwebpageloadbalancer"
-}
-
-variable "lambdaname" {
-  default = "casestudylambda"
 }
