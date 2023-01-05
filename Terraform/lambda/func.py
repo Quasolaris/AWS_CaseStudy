@@ -1,5 +1,14 @@
 def handler(event, context):
-    message = 'Hello {} {}!'.format(event['first_name'], event['last_name'])  
-    return { 
-        'message' : message
-    }
+    numerator = event.get('numerator')
+    denominator = event.get('denominator')
+    #result = numerator/denominator
+    result = numerator
+    response = {
+        "statusCode": 200,
+        "statusDescription": "200 OK",
+        "isBase64Encoded": False,
+        "headers": {"Content-Type": "text/json; charset=utf-8"},
+        "body": result
+        }
+
+    return response
