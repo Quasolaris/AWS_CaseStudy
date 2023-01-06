@@ -80,7 +80,7 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert" #change to your AWS id
+    ssl_certificate_id = "arn:aws:iam::273859233498:server-certificate/fhnw_cert" #change to your AWS id
   }
 
   health_check {
@@ -147,7 +147,7 @@ resource "aws_lambda_function" "lambda_aws_cli" {
   
 
   function_name             = "${var.lambdaname}"
-  role                      = "arn:aws:iam::918617678239:role/LabRole"
+  role                      = "arn:aws:iam::273859233498:role/LabRole"
 
   handler                   = "main.java.ch.fhnw.pcls.Handler"
   runtime                   = "java11"
