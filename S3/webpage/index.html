@@ -47,13 +47,13 @@
             ]
 
             xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "https://du2ejvr34fzrdoi2aq4mpxyara0qjbvp.lambda-url.us-east-1.on.aws/", true);
-            xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xmlhttp.setRequestHeader('Access-Control-Allow-Methods', '*');
-            xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
-            xmlhttp.setRequestHeader('Access-Control-Allow-Max-Age', '32000');
-            xmlhttp.setRequestHeader('Content-type', 'application/json')
-            xmlhttp.setRequestHeader('Access-Control-Allow-Headers', '*');
+            xmlhttp.open("POST", "https://hcy5phpsvvp6meupoxayfnms5u0bheei.lambda-url.us-east-1.on.aws/", true);
+            //xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Methods', '*');
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Max-Age', '32000');
+            xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Headers', '*');
             xmlhttp.send(JSON.stringify(arguments));
 
             }

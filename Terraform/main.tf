@@ -12,7 +12,7 @@ module "s3" {
 
 #==========================================================
 # following is the needed cert creation for HTTPS
-/*
+
 resource "tls_private_key" "fhnw_private_casestudy" {
   algorithm = "RSA"
   rsa_bits = "4096"
@@ -49,14 +49,13 @@ resource "aws_acm_certificate" "cert" {
 
 resource "aws_iam_server_certificate" "fhnw_cert" {
   name             = "fhnw_cert"
-  /*
   private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
   certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
 
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 
 }
-*/
+
 # ==============================================================
 
 
@@ -106,61 +105,42 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
 #    source = "../CDN"
 #}
 
-data "template_file" "pom_template" {
-
-  template = file("../Lambda/templates/pom.tpl")
-  
-  vars = {
-    artifact      = "casestudylambda"
-    version       = "1.8" # change version number in order to redeploy the function
-    description   = "case-study-lambda Lambda Function"
-  }
-}
-
-resource "local_file" "pom_xml" {
-  content         = data.template_file.pom_template.rendered
-  filename        = "../Lambda/pom.xml"
-}
-
-
-resource "null_resource" "build" {
-  
-  provisioner "local-exec" {
-      command = "mvn package -f ../Lambda/pom.xml"
-  }
-
-  depends_on = [
-    local_file.pom_xml
-  ]
-  
-}
-
-locals {
-
-    lambda_payload_filename = "../Lambda/target/casestudylambda-1.0.jar"
-}
-
-
+# deploy lambda function
 resource "aws_lambda_function" "lambda_aws_cli" {
-  
-  filename                  = local.lambda_payload_filename
-  
-
+  filename         = data.archive_file.zip.output_path
+  source_code_hash = data.archive_file.zip.output_base64sha256
   function_name             = "${var.lambdaname}"
   role                      = "arn:aws:iam::273859233498:role/LabRole"
+  handler          = "func.handler"
+  runtime          = "python3.8"
 
-  handler                   = "main.java.ch.fhnw.pcls.Handler"
-  runtime                   = "java11"
-  memory_size               = 512
-
-  source_code_hash          = "${base64sha256(filebase64(local.lambda_payload_filename))}"
 
   depends_on = [
-    aws_cloudwatch_log_group.aws_cli_log_group,
-    null_resource.build
+    aws_cloudwatch_log_group.aws_cli_log_group
   ]
 
   tags = var.tags 
+}
+
+data "archive_file" "zip" {
+  type        = "zip"
+  source_dir = "../Lambda/"
+  output_path = "../Lambda/packedlambda.zip"
+}
+
+resource "aws_lambda_function_url" "casestudy_lambda_url" {
+  function_name      = aws_lambda_function.lambda_aws_cli.function_name
+  authorization_type = "NONE"
+  depends_on = [aws_lambda_function.lambda_aws_cli]
+
+  cors {
+    allow_credentials = true
+    allow_origins     = ["http://s3-static-webpage-casestudy-fhnw.s3-website-us-east-1.amazonaws.com"]
+    allow_methods     = ["*"]
+    allow_headers     = ["date", "keep-alive"]
+    expose_headers    = ["keep-alive", "date"]
+    max_age           = 86400
+  }
 }
 
 resource "aws_cloudwatch_log_group" "aws_cli_log_group" {
@@ -193,21 +173,6 @@ resource "aws_iam_policy" "lambda_logging" {
 }
 EOF
 
-}
-
-resource "aws_lambda_function_url" "test_latest" {
-  function_name      = aws_lambda_function.lambda_aws_cli.function_name
-  authorization_type = "NONE"
-  depends_on = [aws_lambda_function.lambda_aws_cli]
-
-  cors {
-    allow_credentials = false
-    allow_origins     = ["*"]
-    allow_methods     = ["*"]
-    allow_headers     = ["date", "keep-alive", "access-control-allow-headers", "access-control-allow-origin", "x-requested-with"]
-    expose_headers    = ["keep-alive", "date", "access-control-allow-headers", "access-control-allow-origin", "x-requested-with"]
-    max_age           = 86400
-  }
 }
 
 #creating the Cloudfront distribution :
@@ -248,7 +213,7 @@ resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
-      locations        = ["IN", "US", "CA"]
+      locations        = ["IN", "US", "CA", "CH"]
     }
   }
 
