@@ -1,20 +1,17 @@
 # Terraform Dateien
 ## main.tf
 Deploys infrastructure on AWS:
+* CloudFront CDN
+* LoadBalancer
+* S3 Bucket
 * Lambda function
+* CloudWatch log group
 
 
 ## deployment
 Precondition: Terraform is installed on your machine.
 
-1. Build the Java application with maven
-
-```Shell
-cd ../Lambda
-mvn package
-```
-
-2. Create a file called variable.tf which contains the following:
+1. Edit the file called variable.tf which contains the following:
 
 ```terraform
 variable "aws_access_key" {
@@ -31,19 +28,20 @@ variable "region" {
 }
 ```
 
-3. Initialize the working directory:
+2. Initialize the working directory:
 `terraform init`
 
-4. Verify the script:
-`terraform plan -out .tfpan`
+3. Verify the script:
+`terraform plan`
 
-5. Roll out the configured infrastructure:
-`terraform apply .tfplan`
+4. Roll out the configured infrastructure:
+`terraform apply`
 
-6. Remove the configured infrastructure:
+5. Remove the configured infrastructure:
 `terraform destroy`
+
 ### Activate HTTPS LoadBalancer
-YOu need to comment in the marked lines in the main.tf file and also comment in the following:
+You need to comment in the marked lines in the main.tf file and also comment in the following:
 
 Under loadbalancer ressource in main.tf
 ````terraform
@@ -53,31 +51,7 @@ Under loadbalancer ressource in main.tf
     aws_iam_server_certificate.fhnw_cert
   ]
 ````
-### Troubleshooting
-In case you see the following error during the deployment (`terraform apply`):
-```
-Error: Provider produced inconsistent final plan
-│
-│ When expanding the plan for aws_lambda_function.lambda_aws_cli to include new values learned so far during apply, provider "registry.terraform.io/hashicorp/aws" produced an invalid new value for
-│ .source_code_hash: was cty.StringVal("u2jmP8yRUZSG71hntgWqx8b8/dq6k05ZTqinr48iZTw="), but now cty.StringVal("VO4rwLNJ4viztxkwhQVwmh//9DU0iJQK3AjrPVqtKkk=").
-│
-│ This is a bug in the provider, which should be reported in the provider's own issue tracker.
-```
 
-Open the file called main.tf and increase the version number in the following code block:
-
-```terraform
-data "template_file" "pom_template" {
-
-  template = file("../Lambda/templates/pom.tpl")
-  
-  vars = {
-    artifact      = "casestudylambda"
-    version       = "1.0" # change version number in order to redeploy the function
-    description   = "case-study-lambda Lambda Function"
-  }
-}
-```
 ## usage of the lambda function
 To test the lambda function you can provide a JSON array with two integers in it:
 ```JSON
@@ -87,3 +61,5 @@ To test the lambda function you can provide a JSON array with two integers in it
 ]
 ```
 The function will perform an integer division and return the result.
+However, the calculation is currently outcommented.
+Instead the function will return the following String: Resultat einfuegen
