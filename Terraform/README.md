@@ -28,16 +28,34 @@ variable "region" {
 }
 ```
 
-2. Initialize the working directory:
+2. Change the Account ID in "main.tf" in two places:
+`ssl_certificate_id = "arn:aws:iam::<your_aws_account_id>:server-certificate/fhnw_cert"`
+and
+`role = "arn:aws:iam::<your_aws_account_id>:role/LabRole"`
+
+3. Initialize the working directory:
 `terraform init`
 
-3. Verify the script:
+4. Verify the script:
 `terraform plan`
 
-4. Roll out the configured infrastructure:
+5. Roll out the configured infrastructure:
 `terraform apply`
 
-5. Remove the configured infrastructure:
+6. Replace the lambda function URL in "../S3/webpage/index.html" with the correct (newly deployed) function URL and then upload/replace the file on S3:
+```JS
+xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST", "<ADD_AWS_LAMBDA_FUNCTION_URL>", true);
+            //xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Methods', '*');
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Max-Age', '32000');
+            xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+            //xmlhttp.setRequestHeader('Access-Control-Allow-Headers', '*');
+            xmlhttp.send(JSON.stringify(arguments));
+```
+
+7. Remove the configured infrastructure again:
 `terraform destroy`
 
 ### Activate HTTPS LoadBalancer
