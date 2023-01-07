@@ -95,7 +95,7 @@ resource "aws_s3_bucket_policy" "prod_website" {
                 "AWS": "arn:aws:iam::127311923021:root"
               },
               "Action": "s3:PutObject",
-              "Resource": "arn:aws:s3:::${var.s3Bucket}/AWSLogs/918617678239/*"
+              "Resource": "arn:aws:s3:::${var.s3Bucket}/AWSLogs/${var.account_id}/*"
             }
           ]
     }
@@ -112,7 +112,7 @@ resource "aws_s3_access_point" "s3_accesspoint_fhnw_pcls" {
 
 #==========================================================
 # following is the needed cert creation for HTTPS
-/*
+
 resource "tls_private_key" "fhnw_private_casestudy" {
   algorithm = "RSA"
   rsa_bits = "4096"
@@ -124,7 +124,7 @@ resource "tls_self_signed_cert" "cert_fhnw_casestudy" {
   private_key_pem = tls_private_key.fhnw_private_casestudy.private_key_pem
 
   subject {
-    common_name  = "s3-static-webpage-casestudy-fhnw.s3.amazonaws.com"
+    common_name  = "${var.s3Bucket}.s3.amazonaws.com"
     organization = "FHNW PCLS CaseStudy"
   }
 
@@ -147,7 +147,7 @@ resource "aws_acm_certificate" "cert" {
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 }
 
-resource "aws_iam_server_certificate" "fhnw_cert" {terrarom
+resource "aws_iam_server_certificate" "fhnw_cert" {
   name             = "fhnw_cert"
   private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
   certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
@@ -155,7 +155,7 @@ resource "aws_iam_server_certificate" "fhnw_cert" {terrarom
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 
 }
-*/
+
 # ==============================================================
 
 
@@ -179,7 +179,7 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert" #change to your AWS id
+    ssl_certificate_id = "arn:aws:iam::${var.account_id}:server-certificate/fhnw_cert" #change to your AWS id
   }
 
   health_check {
@@ -204,9 +204,9 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
   }
 
   depends_on = [
-    aws_s3_bucket_policy.prod_website
+    aws_s3_bucket_policy.prod_website,
     # comment the fhnw_cert if already run once
-    #aws_iam_server_certificate.fhnw_cert
+    aws_iam_server_certificate.fhnw_cert
   ]
 }
 
@@ -219,7 +219,7 @@ resource "aws_lambda_function" "lambda_aws_cli" {
   filename         = data.archive_file.zip.output_path
   source_code_hash = data.archive_file.zip.output_base64sha256
   function_name             = "${var.lambdaname}"
-  role                      = "arn:aws:iam::918617678239:role/LabRole"
+  role                      = "arn:aws:iam::${var.account_id}:role/LabRole"
   handler          = "func.handler"
   runtime          = "python3.8"
 
@@ -244,7 +244,7 @@ resource "aws_lambda_function_url" "casestudy_lambda_url" {
 
   cors {
     allow_credentials = true
-    allow_origins     = ["http://s3-static-webpage-casestudy-fhnw-new.s3-website-us-east-1.amazonaws.com"]
+    allow_origins     = ["http://${var.s3Bucket}.s3-website-us-east-1.amazonaws.com"]
     allow_methods     = ["*"]
     allow_headers     = ["date", "keep-alive"]
     expose_headers    = ["keep-alive", "date", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
