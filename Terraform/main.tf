@@ -1,11 +1,13 @@
+# Credentials for Terrafom and AWS-CLI
 provider "aws" {
-    access_key = "${var.aws_access_key}"
-    secret_key = "${var.aws_secret_key}"
-    token = "${var.aws_session_token}"
-    region = "${var.region}"
+  access_key = "${var.aws_access_key}"
+  secret_key = "${var.aws_secret_key}"
+  token = "${var.aws_session_token}"
+  region = "${var.region}"
 }
 
 
+#========[ S3 BUCKET ]==============
 resource "aws_s3_bucket" "webpage_bucket_casestudy_fhnw" {
   bucket = "${var.s3Bucket}"
   acl = "${var.acl_value}"
@@ -109,7 +111,10 @@ resource "aws_s3_access_point" "s3_accesspoint_fhnw_pcls" {
 
   depends_on = [aws_s3_bucket.webpage_bucket_casestudy_fhnw]
 }
+#========[ S3 BUCKET ]==============
 
+
+#========[ Certificates ]==============
 #==========================================================
 # following is the needed cert creation for HTTPS
 
@@ -157,9 +162,10 @@ resource "aws_iam_server_certificate" "fhnw_cert" {
 }
 
 # ==============================================================
+#========[ Certificates ]==============
 
 
-
+#========[ LoadBalancer ]==============
 resource "aws_elb" "loadbalancer_casestudy_fhnw" {
   name               = "${var.laodbalancer}"
   availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
@@ -209,11 +215,9 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     aws_iam_server_certificate.fhnw_cert
   ]
 }
+#========[ LoadBalancer ]==============
 
-#module "cdn" {
-#    source = "../CDN"
-#}
-
+#========[ Lambda ]==============
 # deploy lambda function
 resource "aws_lambda_function" "lambda_aws_cli" {
   filename         = data.archive_file.zip.output_path
@@ -228,7 +232,7 @@ resource "aws_lambda_function" "lambda_aws_cli" {
     aws_cloudwatch_log_group.aws_cli_log_group
   ]
 
-  tags = var.tags 
+  tags = var.tags
 }
 
 data "archive_file" "zip" {
@@ -251,12 +255,76 @@ resource "aws_lambda_function_url" "casestudy_lambda_url" {
     max_age           = 86400
   }
 }
+#========[ Lambda ]==============
 
+
+
+#========[ API-GateWay ]==============
+resource "aws_api_gateway_rest_api" "lambda_casestudy_api_gateway" {
+  name        = "LambdaAPI"
+  description = "API Gateway for Lambda Trigger"
+  depends_on = [aws_lambda_function_url.casestudy_lambda_url
+  ]
+}
+
+
+resource "aws_lambda_permission" "apigw" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.lambda_aws_cli.function_name}"
+  principal     = "apigateway.amazonaws.com"
+  # The /*/* portion grants access from any method on any resource
+  # within the API Gateway "REST API".
+  source_arn = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.execution_arn}/*/*"
+}
+
+
+
+resource "aws_api_gateway_method" "proxy_lambda" {
+  rest_api_id   = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.id}"
+  resource_id   = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.root_resource_id}"
+  http_method   = "ANY"
+  authorization = "NONE"
+
+  depends_on = [
+    aws_api_gateway_rest_api.lambda_casestudy_api_gateway
+  ]
+}
+
+resource "aws_api_gateway_integration" "lambda" {
+  rest_api_id = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.id}"
+  resource_id = "${aws_api_gateway_method.proxy_lambda.resource_id}"
+  http_method = "${aws_api_gateway_method.proxy_lambda.http_method}"
+
+  integration_http_method = "POST"
+  type                    = "MOCK"
+  uri                     = "${aws_lambda_function.lambda_aws_cli.invoke_arn}"
+
+  depends_on = [
+    aws_api_gateway_method.proxy_lambda
+  ]
+}
+
+
+resource "aws_api_gateway_deployment" "api_gateway_deployment" {
+  depends_on = [
+    aws_lambda_function_url.casestudy_lambda_url,
+    aws_api_gateway_method.proxy_lambda,
+    aws_api_gateway_integration.lambda
+  ]
+  stage_name  = "trigger"
+  rest_api_id = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.id}"
+}
+
+#========[ API-GateWay ]==============
+
+
+#========[ CloudWatch ]==============
 resource "aws_cloudwatch_log_group" "aws_cli_log_group" {
   name              = "/aws/lambda/casestudylambda"
   retention_in_days = 14
 
-  tags = var.tags 
+  tags = var.tags
 
 }
 
@@ -283,16 +351,16 @@ resource "aws_iam_policy" "lambda_logging" {
 EOF
 
 }
+#========[ CloudWatch ]==============
 
-#creating the Cloudfront distribution :
+
+#========[ CloudFront ]==============
 resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
-  enabled             = true
-  #aliases             = [aws_elb.loadbalancer_casestudy_fhnw.dns_name] # commented out for default certificate
 
-  # alb = application load balancer, need the name as variable
   origin {
-    domain_name = aws_elb.loadbalancer_casestudy_fhnw.dns_name
-    origin_id   = aws_elb.loadbalancer_casestudy_fhnw.dns_name
+    //domain_name = aws_s3_bucket.webpage_bucket_casestudy_fhnw.website_endpoint
+    domain_name = aws_s3_bucket.webpage_bucket_casestudy_fhnw.bucket_domain_name
+    origin_id   = "http://${var.s3Bucket}.s3-website-us-east-1.amazonaws.com"
 
     custom_origin_config {
       http_port              = 80
@@ -302,10 +370,22 @@ resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
     }
   }
 
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+
+  custom_error_response {
+    error_caching_min_ttl = 0
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/error.html"
+  }
+
+
   default_cache_behavior {
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id       = aws_elb.loadbalancer_casestudy_fhnw.dns_name
+    target_origin_id       = "http://${var.s3Bucket}.s3-website-us-east-1.amazonaws.com"
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values {
@@ -329,12 +409,14 @@ resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
   tags = var.tags
 
 
+
   viewer_certificate {
     cloudfront_default_certificate = true
   }
 
 
   depends_on = [
-    aws_elb.loadbalancer_casestudy_fhnw
+    aws_s3_bucket_policy.prod_website
   ]
 }
+#========[ CloudFront ]==============

@@ -3,7 +3,7 @@ def handler(event, context):
     #numerator = event.get('numerator')
     #denominator = event.get('denominator')
     #result = numerator/denominator
-    result = "Resultat einfuegen"
+    result = "{\"Resultat\": \"einfuegen\"}"
     response = {
         "statusCode": 200,
         "statusDescription": "200 OK",
