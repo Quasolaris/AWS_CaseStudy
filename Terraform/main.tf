@@ -5,14 +5,114 @@ provider "aws" {
     region = "${var.region}"
 }
 
-module "s3" {
-    source = "../S3"
-    bucket_name = "${var.s3Bucket}"
+
+resource "aws_s3_bucket" "webpage_bucket_casestudy_fhnw" {
+  bucket = "${var.s3Bucket}"
+  acl = "${var.acl_value}"
+
+  tags = {
+    "use": "static webpage",
+    "loadbalanced": "yes"
+  }
+}
+
+resource "aws_s3_bucket_cors_configuration" "webpage_config" {
+  bucket = "${var.s3Bucket}"
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST"]
+    allowed_origins = ["*"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+
+  cors_rule {
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+  }
+}
+
+resource "aws_s3_object" "file_upload_index" {
+  bucket      =  "${var.s3Bucket}"
+  key         =  "index.html"
+  acl         = "public-read"
+  source      =  "${path.module}/webpage/index.html"
+  content_type = "text/html"
+
+  depends_on = [aws_s3_bucket.webpage_bucket_casestudy_fhnw]
+}
+
+
+resource "aws_s3_object" "file_upload_error" {
+  bucket      =  "${var.s3Bucket}"
+  key         =  "error.html"
+  acl         = "public-read"
+  source      =  "${path.module}/webpage/error.html"
+  content_type = "text/html"
+
+  depends_on = [aws_s3_bucket.webpage_bucket_casestudy_fhnw]
+}
+
+
+
+resource "aws_s3_bucket_website_configuration" "case_study_webpage_fhnw" {
+  bucket =  "${var.s3Bucket}"
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "error.html"
+  }
+  depends_on = [
+    aws_s3_object.file_upload_index,
+    aws_s3_object.file_upload_error
+  ]
+}
+
+resource "aws_s3_bucket_policy" "prod_website" {
+  bucket =  "${var.s3Bucket}"
+  policy = <<POLICY
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+              "Sid": "PublicReadGetObject",
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                 "s3:GetObject"
+              ],
+              "Resource": [
+                 "arn:aws:s3:::${var.s3Bucket}/*"
+              ]
+              },
+              {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::127311923021:root"
+              },
+              "Action": "s3:PutObject",
+              "Resource": "arn:aws:s3:::${var.s3Bucket}/AWSLogs/918617678239/*"
+            }
+          ]
+    }
+    POLICY
+  depends_on = [aws_s3_bucket.webpage_bucket_casestudy_fhnw]
+}
+
+resource "aws_s3_access_point" "s3_accesspoint_fhnw_pcls" {
+  bucket = "${var.s3Bucket}"
+  name   = "lambdavaluespage"
+
+  depends_on = [aws_s3_bucket.webpage_bucket_casestudy_fhnw]
 }
 
 #==========================================================
 # following is the needed cert creation for HTTPS
-
+/*
 resource "tls_private_key" "fhnw_private_casestudy" {
   algorithm = "RSA"
   rsa_bits = "4096"
@@ -47,7 +147,7 @@ resource "aws_acm_certificate" "cert" {
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 }
 
-resource "aws_iam_server_certificate" "fhnw_cert" {
+resource "aws_iam_server_certificate" "fhnw_cert" {terrarom
   name             = "fhnw_cert"
   private_key      = tls_private_key.fhnw_private_casestudy.private_key_pem
   certificate_body = tls_self_signed_cert.cert_fhnw_casestudy.cert_pem
@@ -55,7 +155,7 @@ resource "aws_iam_server_certificate" "fhnw_cert" {
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 
 }
-
+*/
 # ==============================================================
 
 
@@ -79,7 +179,7 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "arn:aws:iam::273859233498:server-certificate/fhnw_cert" #change to your AWS id
+    ssl_certificate_id = "arn:aws:iam::918617678239:server-certificate/fhnw_cert" #change to your AWS id
   }
 
   health_check {
@@ -90,12 +190,21 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
     interval            = 30
   }
 
+
+  access_logs {
+    bucket = "${var.s3Bucket}"
+  }
+  cross_zone_load_balancing   = true
+  idle_timeout                = 400
+  connection_draining         = true
+  connection_draining_timeout = 400
+
   tags = {
     Name = "loadbalancer-http-8080"
   }
 
   depends_on = [
-    module.s3
+    aws_s3_bucket_policy.prod_website
     # comment the fhnw_cert if already run once
     #aws_iam_server_certificate.fhnw_cert
   ]
@@ -110,7 +219,7 @@ resource "aws_lambda_function" "lambda_aws_cli" {
   filename         = data.archive_file.zip.output_path
   source_code_hash = data.archive_file.zip.output_base64sha256
   function_name             = "${var.lambdaname}"
-  role                      = "arn:aws:iam::273859233498:role/LabRole"
+  role                      = "arn:aws:iam::918617678239:role/LabRole"
   handler          = "func.handler"
   runtime          = "python3.8"
 
@@ -135,10 +244,10 @@ resource "aws_lambda_function_url" "casestudy_lambda_url" {
 
   cors {
     allow_credentials = true
-    allow_origins     = ["http://s3-static-webpage-casestudy-fhnw.s3-website-us-east-1.amazonaws.com"]
+    allow_origins     = ["http://s3-static-webpage-casestudy-fhnw-new.s3-website-us-east-1.amazonaws.com"]
     allow_methods     = ["*"]
     allow_headers     = ["date", "keep-alive"]
-    expose_headers    = ["keep-alive", "date"]
+    expose_headers    = ["keep-alive", "date", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
     max_age           = 86400
   }
 }
