@@ -1,16 +1,17 @@
 variable "aws_access_key" {
 
-  default = "ASIA5LYPBMGP2NLILEIC"
+  default = "ASIASE77BEYKTQRR5ZG5"
 }
 variable "aws_secret_key" {
-  default = "6xRpZcl/GQC0KW8aTLHjH0bx0DnCDJaj/YZR2SRb"
+  default = "YjAUYUZKT06vKusiUfMVNA48kFbTyZSmqhz0WPHk"
 }
 variable "aws_session_token" {
-  default = "FwoGZXIvYXdzEAIaDJYV5RSAQmFxjTah0CK/AfGW+nm+xwy0UgtjnP7fEJtd1oA5BdfsbY/LaSl4EqJVsEV0Ls0cKXA8TEcmmGYAn8BFA8/Cuh2DuqdQebO2GPTGcBPgDfkhrsocmd/0wZhrRQuOELj78XhRPOWwx28NuQXTS+d353ueRXRZIpWAlb9Baf+84VBIaEJ4lrDQmEkY5OtDowXkmb6SIb8oZ3PuXInOu4KVq+FM+H5DKfia9nZzud6pVuTK6idsOTyWiG5dR+AYAvVWzpEjSE7V4PJ5KIe95p0GMi05pesG78CVMfpRzizIsjaSoYMhdVEZilPJ65I91QHtBUTxCqRMCpt0x8Wqfso="
+  default = "FwoGZXIvYXdzEAUaDJJRDVafLn1brzqPkCK+ASqkY30QfM/ukTOCJ4lcP1LHLKYSCXf8gIGJbwkK8DCiieoUXflj49YSdbuJCer3Cd3QlfaJljPKFK+QH+g24tt5RxLA6oZS9GshTr7ecX+N+xSy7wxBFu6TZCe4wXEQsTI+XDRUsdsfyxE04qrQiRk2toF04Uy+5uGY643WKkLvKHkgC8EyqkBNEYyBRTD7Rrh5BMTnz5KxmT5aHHpUI3KgE8vMSoDm88Tn021BhqHue2BkTRxgy/Z4WbKVNWMouJ3nnQYyLR/6qGjuZYvCX0Lz8Qh49NR5ypzzVCOt4NyG0pTtPMjqLGJ3WlE8bK6ekwOh9g=="
+
 }
 
 variable "account_id" {
-  default = "918617678239"
+  default = "148174349845"
 }
 
 
@@ -32,7 +33,7 @@ variable tags {
 # variable names for build script
 
 variable "s3Bucket" {
-  default = "s3-static-webpage-casestudy-fhnw-new"
+  default = "s3-static-webpage-casestudy-fhnw-ik"
 }
 
 variable "laodbalancer" {
@@ -45,4 +46,8 @@ variable "lambdaname" {
 
 variable "acl_value" {
   default = "private"
+}
+
+variable "sns_name" {
+  default = "casestudy-sns"
 }

@@ -124,6 +124,7 @@ resource "tls_private_key" "fhnw_private_casestudy" {
 }
 
 # The error for a missing value can be ignored (new Terraform rule, field is READONLY)
+/*
 resource "tls_self_signed_cert" "cert_fhnw_casestudy" {
 
   private_key_pem = tls_private_key.fhnw_private_casestudy.private_key_pem
@@ -160,7 +161,7 @@ resource "aws_iam_server_certificate" "fhnw_cert" {
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 
 }
-
+*/
 # ==============================================================
 #========[ Certificates ]==============
 
@@ -212,7 +213,7 @@ resource "aws_elb" "loadbalancer_casestudy_fhnw" {
   depends_on = [
     aws_s3_bucket_policy.prod_website,
     # comment the fhnw_cert if already run once
-    aws_iam_server_certificate.fhnw_cert
+    #aws_iam_server_certificate.fhnw_cert
   ]
 }
 #========[ LoadBalancer ]==============
@@ -351,12 +352,136 @@ resource "aws_iam_policy" "lambda_logging" {
 EOF
 
 }
+
+resource "aws_sns_topic" "case_study_sns" {
+  name = var.sns_name
+}
+
+resource "aws_sns_topic_subscription" "sns_subscription" {
+  topic_arn = aws_sns_topic.case_study_sns.arn
+  protocol  = "email"
+  endpoint  = "aws@punraz.ch"
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_lambda_errors" {
+  alarm_name = "alarm-lambda-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "Errors"
+  namespace = "AWS/Lambda"
+  period = 600 # time in seconds, 10 min -> 600s
+  statistic = "Average"
+  threshold = 1
+  alarm_description = "Monitor errors in Lambda function"
+  insufficient_data_actions = []
+  dimensions = { functionName =  var.lambdaname }
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_s3_allrequests" {
+  alarm_name = "alarm-s3-all-requests"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "AllRequests"
+  namespace = "AWS/S3"
+  period = 3600 # time in seconds, 1h --> 3600
+  statistic = "Sum"
+  threshold = 100 # not a lot of traffic is expected, so we decided for 100 requests in 1h
+  alarm_description = "Monitor all Requests (Get, Put, etc.) in S3 bucket"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_s3_400errors" {
+  alarm_name = "alarm-s3-400-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "4xxErrors"
+  namespace = "AWS/S3"
+  period = 300 # time in seconds, 5min --> 300
+  statistic = "Sum"
+  threshold = 5
+  alarm_description = "Monitor all HTTP 400 errors to the S3 Bucket"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_s3_500errors" {
+  alarm_name = "alarm-s3-500-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "4xxErrors"
+  namespace = "AWS/S3"
+  period = 300 # time in seconds, 5min --> 300
+  statistic = "Sum"
+  threshold = 5
+  alarm_description = "Monitor all HTTP 500 errors to the S3 Bucket"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_apigw_400errors" {
+  alarm_name = "alarm-apigw-400-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "4XXError"
+  namespace = "AWS/ApiGateway"
+  period = 300 # time in seconds, 5min --> 300
+  statistic = "SampleCount"
+  threshold = 5
+  alarm_description = "Monitor all HTTP 400 errors to the API Gateway"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_apigw_500errors" {
+  alarm_name = "alarm-apigw-500-errors"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "4XXError"
+  namespace = "AWS/ApiGateway"
+  period = 300 # time in seconds, 5min --> 300
+  statistic = "SampleCount"
+  threshold = 5
+  alarm_description = "Monitor all HTTP 500 errors to the API Gateway"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+# Request count, can later also be interesting for billing estimation
+resource "aws_cloudwatch_metric_alarm" "cwa_apigw_requests" {
+  alarm_name = "alarm-apigw-requests"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "Count"
+  namespace = "AWS/ApiGateway"
+  period = 3600 # time in seconds, 1h --> 3600
+  statistic = "SampleCount"
+  threshold = 100
+  alarm_description = "Monitor all Requests to the API Gateway"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
+resource "aws_cloudwatch_metric_alarm" "cwa_cdn_error_rate" {
+  alarm_name = "alarm-cdn-error-rate"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = 1
+  metric_name = "Sum"
+  namespace = "AWS/ApiGateway"
+  period = 300 # time in seconds, 5min --> 300
+  statistic = "SampleCount"
+  threshold = 5
+  alarm_description = "Monitor all Requests to the API Gateway"
+  insufficient_data_actions = []
+  alarm_actions = [aws_sns_topic.case_study_sns.arn]
+}
+
 #========[ CloudWatch ]==============
 
 
 #========[ CloudFront ]==============
 resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
-
   origin {
     //domain_name = aws_s3_bucket.webpage_bucket_casestudy_fhnw.website_endpoint
     domain_name = aws_s3_bucket.webpage_bucket_casestudy_fhnw.bucket_domain_name
@@ -418,5 +543,7 @@ resource "aws_cloudfront_distribution" "webpage_cf_cdn_casestudy_fhnw" {
   depends_on = [
     aws_s3_bucket_policy.prod_website
   ]
+
+
 }
 #========[ CloudFront ]==============
