@@ -19,6 +19,11 @@ variable "region" {
   default = "us-east-1"
 }
 
+variable "emailaddress" {
+  description = "Email address for the SNS notifications"
+  default = "aws@punraz.ch"
+}
+
 
 # lambda function variables
 variable tags {
@@ -52,7 +57,3 @@ variable "sns_name" {
   default = "casestudy-sns"
 }
 
-variable "emailaddress" {
-  description = "Email address for the SNS notifications"
-  default = "aws@punraz.ch"
-}
