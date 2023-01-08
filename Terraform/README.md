@@ -4,8 +4,9 @@ Deploys infrastructure on AWS:
 * CloudFront CDN
 * LoadBalancer
 * S3 Bucket
+* API Gateway
 * Lambda function
-* CloudWatch log group
+* CloudWatch
 
 
 ## deployment
@@ -23,29 +24,27 @@ variable "aws_secret_key" {
 variable "aws_session_token" {
     default = "<your_aws_session_token>"
 }
+variable "account_id" {
+  default = "<your_aws_account_id>"
+}
 variable "region" {
     default = "<your_aws_default_region>"
 }
 ```
 
-2. Change the Account ID in "main.tf" in two places:
-`ssl_certificate_id = "arn:aws:iam::<your_aws_account_id>:server-certificate/fhnw_cert"`
-and
-`role = "arn:aws:iam::<your_aws_account_id>:role/LabRole"`
-
-3. Initialize the working directory:
+2. Initialize the working directory:
 `terraform init`
 
-4. Verify the script:
+3. Verify the script:
 `terraform plan`
 
-5. Roll out the configured infrastructure:
+4. Roll out the configured infrastructure:
 `terraform apply`
 
-6. Replace the lambda function URL in "../S3/webpage/index.html" with the correct (newly deployed) function URL and then upload/replace the file on S3:
+5. Replace the API Gateway URL in "../S3/webpage/index.html" with the correct (newly deployed) API Gateway URL (example value for <ADD_AWS_API_GATEWAY_URL>: "https://6ruy3crqle.execute-api.us-east-1.amazonaws.com/test/trigger") and then upload/replace the file on S3:
 ```JS
 xmlhttp = new XMLHttpRequest();
-            xmlhttp.open("POST", "<ADD_AWS_LAMBDA_FUNCTION_URL>", true);
+            xmlhttp.open("POST", "<ADD_AWS_API_GATEWAY_URL>", true);
             //xmlhttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             //xmlhttp.setRequestHeader('Access-Control-Allow-Methods', '*');
             //xmlhttp.setRequestHeader('Access-Control-Allow-Origin', '*');
