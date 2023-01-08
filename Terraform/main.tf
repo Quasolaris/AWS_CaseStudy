@@ -124,7 +124,7 @@ resource "tls_private_key" "fhnw_private_casestudy" {
 }
 
 # The error for a missing value can be ignored (new Terraform rule, field is READONLY)
-/*
+
 resource "tls_self_signed_cert" "cert_fhnw_casestudy" {
 
   private_key_pem = tls_private_key.fhnw_private_casestudy.private_key_pem
@@ -161,7 +161,7 @@ resource "aws_iam_server_certificate" "fhnw_cert" {
   depends_on = [tls_self_signed_cert.cert_fhnw_casestudy]
 
 }
-*/
+
 # ==============================================================
 #========[ Certificates ]==============
 
