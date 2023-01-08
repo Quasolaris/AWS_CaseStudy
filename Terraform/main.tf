@@ -251,7 +251,7 @@ resource "aws_lambda_function_url" "casestudy_lambda_url" {
     allow_credentials = true
     allow_origins     = ["http://${var.s3Bucket}.s3-website-us-east-1.amazonaws.com"]
     allow_methods     = ["*"]
-    allow_headers     = ["date", "keep-alive"]
+    allow_headers     = ["date", "keep-alive", "content-type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
     expose_headers    = ["keep-alive", "date", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
     max_age           = 86400
   }
@@ -261,60 +261,49 @@ resource "aws_lambda_function_url" "casestudy_lambda_url" {
 
 
 #========[ API-GateWay ]==============
-resource "aws_api_gateway_rest_api" "lambda_casestudy_api_gateway" {
-  name        = "LambdaAPI"
-  description = "API Gateway for Lambda Trigger"
-  depends_on = [aws_lambda_function_url.casestudy_lambda_url
-  ]
+resource "aws_apigatewayv2_api" "lambda_casestudy_api_gateway" {
+  name          = "LambdaAPI"
+  protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = ["http://${var.s3Bucket}.s3-website-us-east-1.amazonaws.com", "https://d22km9lvpxaerm.cloudfront.net"]
+    allow_methods = ["*"]
+    allow_headers = ["date", "keep-alive", "content-type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
+    expose_headers    = ["keep-alive", "date", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
+    max_age = 86400
+  }
+  depends_on = [aws_lambda_function_url.casestudy_lambda_url]
 }
 
+resource "aws_apigatewayv2_stage" "lambda_casestudy_api_gateway" {
+  api_id = aws_apigatewayv2_api.lambda_casestudy_api_gateway.id
 
-resource "aws_lambda_permission" "apigw" {
-  statement_id  = "AllowAPIGatewayInvoke"
+  name        = "test"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_integration" "lambda_trigger" {
+  api_id = aws_apigatewayv2_api.lambda_casestudy_api_gateway.id
+
+  integration_uri    = aws_lambda_function.lambda_aws_cli.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+
+}
+
+resource "aws_apigatewayv2_route" "lambda_trigger" {
+  api_id = aws_apigatewayv2_api.lambda_casestudy_api_gateway.id
+
+  route_key = "POST /trigger"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_trigger.id}"
+}
+
+resource "aws_lambda_permission" "api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.lambda_aws_cli.function_name}"
   principal     = "apigateway.amazonaws.com"
-  # The /*/* portion grants access from any method on any resource
-  # within the API Gateway "REST API".
-  source_arn = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.execution_arn}/*/*"
-}
 
-
-
-resource "aws_api_gateway_method" "proxy_lambda" {
-  rest_api_id   = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.id}"
-  resource_id   = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.root_resource_id}"
-  http_method   = "ANY"
-  authorization = "NONE"
-
-  depends_on = [
-    aws_api_gateway_rest_api.lambda_casestudy_api_gateway
-  ]
-}
-
-resource "aws_api_gateway_integration" "lambda" {
-  rest_api_id = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.id}"
-  resource_id = "${aws_api_gateway_method.proxy_lambda.resource_id}"
-  http_method = "${aws_api_gateway_method.proxy_lambda.http_method}"
-
-  integration_http_method = "POST"
-  type                    = "MOCK"
-  uri                     = "${aws_lambda_function.lambda_aws_cli.invoke_arn}"
-
-  depends_on = [
-    aws_api_gateway_method.proxy_lambda
-  ]
-}
-
-
-resource "aws_api_gateway_deployment" "api_gateway_deployment" {
-  depends_on = [
-    aws_lambda_function_url.casestudy_lambda_url,
-    aws_api_gateway_method.proxy_lambda,
-    aws_api_gateway_integration.lambda
-  ]
-  stage_name  = "trigger"
-  rest_api_id = "${aws_api_gateway_rest_api.lambda_casestudy_api_gateway.id}"
+  source_arn = "${aws_apigatewayv2_api.lambda_casestudy_api_gateway.execution_arn}/*/*"
 }
 
 #========[ API-GateWay ]==============

@@ -9,7 +9,7 @@ def handler(event, context):
         "statusDescription": "200 OK",
         "isBase64Encoded": False,
         "headers": {
-            "Content-Type": "application/json; charset=utf-8",
+            "Content-Type": "text/plain",
         },
         "body": json.dumps(result)
         }
