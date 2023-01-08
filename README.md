@@ -46,6 +46,6 @@ Wird man via diesem [link](http://s3-static-webpage-casestudy-fhnw-som.s3.amazon
 
 3. Lambda Trigger
 
-Erhält man durch drücken auf "Activate Lambda" eine Response via dem API-Gateway (Mnachmal zweimal Drücken nötig)?
+Erhält man durch drücken auf "Activate Lambda" eine Response via dem API-Gateway (Manchmal zweimal Drücken nötig)?
 <img title="Trigger" alt="Trigger picture" src="/Images/trigger.png">
 
