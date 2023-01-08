@@ -17,7 +17,7 @@ Als Ausgangslage für den Use Case wird ein KMU angenommen, welches eine statisc
 - LoadBalancer für mögliche EC2 Erweiterung
 
 ## Dokumentation
-- 
+- [Dokumentation](https://github.com/Quasolaris/AWS_CaseStudy/blob/main/PCLS_CaseStudy_HS22_IC_MS_IK_SG.pdf)
 
 ### Dateien
 - [main.tf](https://github.com/Quasolaris/AWS_CaseStudy/blob/main/Terraform/main.tf)
