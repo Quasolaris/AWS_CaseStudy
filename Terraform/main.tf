@@ -360,7 +360,7 @@ resource "aws_sns_topic" "case_study_sns" {
 resource "aws_sns_topic_subscription" "sns_subscription" {
   topic_arn = aws_sns_topic.case_study_sns.arn
   protocol  = "email"
-  endpoint  = "aws@punraz.ch"
+  endpoint  = var.emailaddress
 }
 
 resource "aws_cloudwatch_metric_alarm" "cwa_lambda_errors" {
@@ -370,7 +370,7 @@ resource "aws_cloudwatch_metric_alarm" "cwa_lambda_errors" {
   metric_name = "Errors"
   namespace = "AWS/Lambda"
   period = 600 # time in seconds, 10 min -> 600s
-  statistic = "Average"
+  statistic = "Sum"
   threshold = 1
   alarm_description = "Monitor errors in Lambda function"
   insufficient_data_actions = []

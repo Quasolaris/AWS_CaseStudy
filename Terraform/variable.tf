@@ -51,3 +51,8 @@ variable "acl_value" {
 variable "sns_name" {
   default = "casestudy-sns"
 }
+
+variable "emailaddress" {
+  description = "Email address for the SNS notifications"
+  default = "aws@punraz.ch"
+}
