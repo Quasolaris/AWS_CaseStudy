@@ -30,6 +30,11 @@ variable "account_id" {
 variable "region" {
     default = "<your_aws_default_region>"
 }
+
+variable "emailaddress" {
+  description = "Email address for the SNS notifications"
+  default = "<your_email_address>"
+}
 ```
 
 2. Initialize the working directory:
