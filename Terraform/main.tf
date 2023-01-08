@@ -265,7 +265,7 @@ resource "aws_apigatewayv2_api" "lambda_casestudy_api_gateway" {
   name          = "LambdaAPI"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_origins = ["http://${var.s3Bucket}.s3-website-us-east-1.amazonaws.com", "https://d22km9lvpxaerm.cloudfront.net"]
+    allow_origins = ["*"]
     allow_methods = ["*"]
     allow_headers = ["date", "keep-alive", "content-type", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
     expose_headers    = ["keep-alive", "date", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers"]
